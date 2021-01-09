@@ -1,0 +1,72 @@
+---
+kind: pipeline
+type: docker
+name: test-linux-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+# Pipeline is executed only on master branch
+trigger:
+  branch:
+    - master
+
+steps:
+  - name: Backend-Test
+    pull: always
+    image: golang:1.15
+    commands:
+      - make test
+    volumes:
+      - name: cache
+        path: /go/pkg
+
+  - name: pushover
+    image: plugins/pushover
+    settings:
+      user:
+        from_secret: pushover_user
+      token:
+        from_secret: pushover_token
+
+
+---
+kind: pipeline
+type: docker
+name: build-linux-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+# Pipeline is executed only on tag push
+trigger:
+  ref:
+    - refs/tags/*
+
+steps:
+  - name: Backend-Build
+    pull: always
+    image: golang:1.15
+    commands:
+      - make build
+
+  - name: Service-Publish
+    image: plugins/docker
+    auto_tag: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo:
+        from_secret: docker_repository
+
+  - name: pushover
+    image: plugins/pushover
+    settings:
+      user:
+        from_secret: pushover_user
+      token:
+        from_secret: pushover_token
