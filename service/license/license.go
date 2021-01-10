@@ -37,3 +37,7 @@ func (s *license) Update(license *models.License) error {
 func (s *license) Delete(id int64) error {
 	return nil
 }
+
+func (s *license) Renew(license *models.License) error {
+	return nil
+}

@@ -1,7 +1,8 @@
 package models
 
 type License struct {
-	ID     int
-	Serial string
-	// What else ?
+	ID         int64
+	Serial     string
+	HardwareID string
+	Customer   string
 }

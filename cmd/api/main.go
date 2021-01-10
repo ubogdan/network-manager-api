@@ -9,6 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	license2 "github.com/ubogdan/network-manager-api/repository/license"
+	release2 "github.com/ubogdan/network-manager-api/repository/release"
+	"github.com/ubogdan/network-manager-api/service/license"
+	"github.com/ubogdan/network-manager-api/service/release"
 	"github.com/ubogdan/network-manager-api/service/router"
 	"github.com/ubogdan/network-manager-api/transport/http/handler"
 	"github.com/ubogdan/network-manager-api/transport/http/middleware"
@@ -16,10 +20,7 @@ import (
 
 var listen string
 var s3Domain, s3AccessKey, s3SecretKey = os.Getenv("S3_DOMAIN"), os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
-
-func notImplemented(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(`{"version":"0.3.1"}`))
-}
+var licPrivate = os.Getenv("PRIVATE_KEY")
 
 func main() {
 
@@ -42,8 +43,10 @@ func main() {
 
 	muxRouter := router.NewMuxRouter(api, logSvc)
 
-	handler.NewLicense(muxRouter, nil, logSvc)
-	handler.NewRelease(muxRouter, nil, logSvc)
+	licSvc := license.New(license2.New())
+	relSvc := release.New(release2.New())
+	handler.NewLicense(muxRouter, licSvc, logSvc)
+	handler.NewRelease(muxRouter, relSvc, logSvc)
 
 	// ----------------
 	httpd := &http.Server{
