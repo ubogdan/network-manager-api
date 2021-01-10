@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	models "github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/model"
 	"github.com/ubogdan/network-manager-api/service"
 	"github.com/ubogdan/network-manager-api/transport/http/request"
 	"github.com/ubogdan/network-manager-api/transport/http/response"
@@ -25,8 +25,8 @@ func NewRelease(router service.Router, relSvc service.Release, logger service.Lo
 	router.Put("/release", handler.Update)
 
 	// Client release channels
-	router.Get("/release/latest", handler.List(models.DevelopementChannel))
-	router.Get("/release/stable", handler.List(models.ProductionChannel))
+	router.Get("/release/latest", handler.List(model.DevelopementChannel))
+	router.Get("/release/stable", handler.List(model.ProductionChannel))
 }
 
 // List client handler

@@ -1,8 +1,8 @@
-package models
+package model
 
 type License struct {
-	ID         int64
-	Serial     string
+	ID         uint64 `boltholdKey:"ID"`
+	Serial     string `boltholdIndex:"serial"`
 	HardwareID string
 	Customer   string
 }

@@ -1,13 +1,13 @@
 package request
 
 import (
-	models "github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/model"
 )
 
 type Release struct {
 	Version string `json:"version"`
 }
 
-func (l *Release) ToModel() models.Release {
-	return models.Release{}
+func (l *Release) ToModel() model.Release {
+	return model.Release{}
 }

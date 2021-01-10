@@ -1,13 +1,13 @@
 package repository
 
 import (
-	models "github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/model"
 )
 
 type License interface {
-	FindAll() ([]models.License, error)
-	Find(id int64) (*models.License, error)
-	Create(license *models.License) error
-	Update(license *models.License) error
-	Delete(id int64) error
+	FindAll() ([]model.License, error)
+	Find(id uint64) (*model.License, error)
+	Create(license *model.License) error
+	Update(license *model.License) error
+	Delete(id uint64) error
 }

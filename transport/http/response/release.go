@@ -1,14 +1,14 @@
 package response
 
 import (
-	models "github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/model"
 )
 
 type Release struct {
 	Version string `json:"version"`
 }
 
-func FromRelease(rel *models.Release) Release {
+func FromRelease(rel *model.Release) Release {
 	return Release{
 		Version: rel.Version.String(),
 	}

@@ -9,7 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	models "github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/model"
 )
 
 type License struct {
@@ -23,16 +23,16 @@ type LicenseRenew struct {
 	HardwareID string `json:"hardware_id"`
 }
 
-func (l *License) ToModel() models.License {
-	return models.License{
+func (l *License) ToModel() model.License {
+	return model.License{
 		ID:         l.ID,
 		HardwareID: l.HardwareID,
 		Customer:   l.Customer,
 	}
 }
 
-func (l *LicenseRenew) ToModel() models.License {
-	return models.License{
+func (l *LicenseRenew) ToModel() model.License {
+	return model.License{
 		HardwareID: l.HardwareID,
 		Serial:     l.Serial,
 	}
