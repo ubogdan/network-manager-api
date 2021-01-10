@@ -54,14 +54,15 @@ steps:
 
   - name: Service-Publish
     image: plugins/docker
-    auto_tag: true
     settings:
+      auto_tag: true
+      registry: repo.treescale.com
+      repo:
+        from_secret: docker_repo
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo:
-        from_secret: docker_repository
 
   - name: pushover
     image: plugins/pushover

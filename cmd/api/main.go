@@ -41,9 +41,9 @@ func main() {
 	)
 
 	muxRouter := router.NewMuxRouter(api, logSvc)
-	handler.NewVersion(muxRouter, logSvc)
 
-	api.HandleFunc("/license/renew", notImplemented).Methods(http.MethodPost)
+	handler.NewLicense(muxRouter, nil, logSvc)
+	handler.NewRelease(muxRouter, nil, logSvc)
 
 	// ----------------
 	httpd := &http.Server{

@@ -1,5 +1,5 @@
 package response
 
-type Version struct {
+type Release struct {
 	Version string `json:"version"`
 }
