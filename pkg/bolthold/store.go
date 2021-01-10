@@ -63,6 +63,11 @@ func WithDatabase(db *bolt.DB, options *Options) (*Store, error) {
 	}, nil
 }
 
+// Bolt return bold implementation
+func (s *Store) Bolt() BoltDB {
+	return s.db
+}
+
 // Close closes the bolt db
 func (s *Store) Close() error {
 	return s.db.Close()
