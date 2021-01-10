@@ -25,36 +25,40 @@ import (
 	"github.com/ubogdan/network-manager-api/transport/http/middleware"
 )
 
-var listen string
+var listen, boltdb string
+var s3AccessKey, s3SecretKey = os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
 
 func main() {
-
+	flag.StringVar(&boltdb, "database", "bolt.db", "")
 	flag.StringVar(&listen, "listen", ":8080", "http listen addres")
 	flag.Parse()
 
 	logSvc := logrus.New()
 
-	awsSession, err := session.NewSession(&aws.Config{
-		Credentials:      credentials.NewStaticCredentials(os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY"), ""),
-		Region:           aws.String(os.Getenv("S3_REGION")),
-		Endpoint:         aws.String(os.Getenv("S3_ENDPOINT")),
-		S3ForcePathStyle: aws.Bool(true),
-	})
-	if err != nil {
-		log.Fatalf("session.NewSession %s", err)
+	var db *bolthold.Store
+	var err error
+	if s3AccessKey != "" && s3SecretKey != "" {
+		awsSession, e := session.NewSession(&aws.Config{
+			Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, ""),
+			Region:           aws.String(os.Getenv("S3_REGION")),
+			Endpoint:         aws.String(os.Getenv("S3_ENDPOINT")),
+			S3ForcePathStyle: aws.Bool(true),
+		})
+		if e != nil {
+			log.Fatalf("session.NewSession %s", e)
+		}
+		s3boltdb := bolthold.WithS3(s3.New(awsSession), os.Getenv("S3_BUCKET"), os.Getenv("S3_PREFIX"))
+		s3boltdb.Log = logSvc
+		db, err = s3boltdb.Open(boltdb, 0755, nil)
+	} else {
+		db, err = bolthold.Open(boltdb, 0755, nil)
 	}
-
-	s3boltdb := bolthold.WithS3(s3.New(awsSession), os.Getenv("S3_BUCKET"), os.Getenv("S3_PREFIX"))
-	s3boltdb.Log = logSvc
-
-	db, err := s3boltdb.Open("bolt.db", 0755, nil)
 	if err != nil {
-		log.Fatalf("s3botltdb.WithS3 %s", err)
+		log.Fatalf("bolthold.Open %s", err)
 	}
 	defer db.Close()
 
 	r := mux.NewRouter()
-
 	api := r.PathPrefix("/v1").Subrouter()
 	api.Methods(http.MethodOptions)
 	api.Use(
@@ -65,11 +69,10 @@ func main() {
 		middleware.RateLimit(10), // 10 requests/second
 	)
 
-	muxRouter := router.NewMuxRouter(api, logSvc)
-
-	//licSvc := license.WithS3(license2.WithS3())
 	licSvc := license.New(bolt.License(db))
 	relSvc := release.New(release2.New())
+
+	muxRouter := router.NewMuxRouter(api, logSvc)
 	handler.NewLicense(muxRouter, licSvc, logSvc)
 	handler.NewRelease(muxRouter, relSvc, logSvc)
 
@@ -82,5 +85,8 @@ func main() {
 		Handler:        r,
 	}
 
-	httpd.ListenAndServe()
+	err = httpd.ListenAndServe()
+	if err != nil {
+		logSvc.Errorf("httpd.Listen %s", err)
+	}
 }
