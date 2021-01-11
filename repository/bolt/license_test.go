@@ -21,7 +21,9 @@ func TestLicense(t *testing.T) {
 	license := model.License{
 		Serial:     "309C8-E70B7-02789-2CD02-B0E00",
 		HardwareID: "3b36e4c70427fc69caf943aa5c975",
-		Customer:   "Some customer",
+		Customer: model.Customer{
+			Name: "Some customer",
+		},
 	}
 	err = lic.Create(&license)
 	assert.NoError(t, err)
@@ -30,8 +32,12 @@ func TestLicense(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, *expect, license)
 
+	expect, err = lic.FindByHardwareID(license.HardwareID)
+	assert.NoError(t, err)
+	assert.Equal(t, *expect, license)
+
 	license.Serial = "A00B0B-FF0FF-12789-2CD02-B0E00"
-	license.Customer = "Another customer"
+	license.Customer.Name = "Another customer"
 	err = lic.Update(&license)
 	assert.NoError(t, err)
 
@@ -42,7 +48,9 @@ func TestLicense(t *testing.T) {
 	license2 := model.License{
 		Serial:     "119C8-E70B7-02789-2CD02-B0E00",
 		HardwareID: "3b3fe4e70427fc69caf943aa5c975",
-		Customer:   "Some other customer",
+		Customer: model.Customer{
+			Name: "Some other customer",
+		},
 	}
 	err = lic.Create(&license2)
 	assert.NoError(t, err)

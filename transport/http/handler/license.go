@@ -57,7 +57,7 @@ func (h *license) Create(w http.ResponseWriter, r *http.Request) error {
 
 func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
-	licenseID, err := strconv.ParseInt(params["id"], 10, 64)
+	licenseID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid user id")
 	}
@@ -79,7 +79,7 @@ func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 
 func (h *license) Delete(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
-	licenseID, err := strconv.ParseInt(params["id"], 10, 64)
+	licenseID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
@@ -111,9 +111,10 @@ func (h *license) Renew(w http.ResponseWriter, r *http.Request) error {
 	//
 	model := renew.ToModel()
 
-	err = h.lic.Renew(&model)
+	derBytes, err := h.lic.Renew(&model)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, "invalid serial number")
 	}
-	return response.ToJSON(w, http.StatusOK, response.FromLicese(&model))
+
+	return response.LicenseToEncryptedPayload(w, derBytes, nil)
 }

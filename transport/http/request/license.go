@@ -13,9 +13,9 @@ import (
 )
 
 type License struct {
-	ID         int64  `json:"id"`
-	HardwareID string `json:"hardware_id"`
-	Customer   string `json:"customer"`
+	ID         uint64   `json:"id"`
+	HardwareID string   `json:"hardware_id"`
+	Customer   Customer `json:"customer"`
 }
 
 type LicenseRenew struct {
@@ -27,7 +27,12 @@ func (l *License) ToModel() model.License {
 	return model.License{
 		ID:         l.ID,
 		HardwareID: l.HardwareID,
-		Customer:   l.Customer,
+		Customer: model.Customer{
+			Name:         l.Customer.Name,
+			Country:      l.Customer.Country,
+			City:         l.Customer.City,
+			Organization: l.Customer.Organization,
+		},
 	}
 }
 
@@ -54,12 +59,12 @@ func LicenseFromEncryptedPayload(reader io.ReadCloser, key []byte) (*LicenseRene
 		return nil, err
 	}
 
-	aesgcm, err := cipher.NewGCM(block)
+	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
 
-	plaintext, err := aesgcm.Open(nil, ciphertext[:12], ciphertext[12:], nil)
+	plaintext, err := aesGCM.Open(nil, ciphertext[:12], ciphertext[12:], nil)
 	if err != nil {
 		return nil, err
 	}

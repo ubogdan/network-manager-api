@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
+	github.com/ubogdan/license v0.1.3
 	go.etcd.io/bbolt v1.3.5
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/ratelimit v0.1.0

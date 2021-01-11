@@ -28,6 +28,11 @@ func (s *license) Find(id uint64) (*model.License, error) {
 	return &license, s.store.FindOne(&license, bolthold.Where(bolthold.Key).Eq(id))
 }
 
+func (s *license) FindByHardwareID(hardwareID string) (*model.License, error) {
+	var license model.License
+	return &license, s.store.FindOne(&license, bolthold.Where("HardwareID").Eq(hardwareID))
+}
+
 func (s *license) Create(license *model.License) error {
 	return s.store.Insert(bolthold.NextSequence(), license)
 }

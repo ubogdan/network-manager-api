@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/ubogdan/network-manager-api/pkg/bolthold"
 	"github.com/ubogdan/network-manager-api/repository/bolt"
+	"github.com/ubogdan/network-manager-api/repository/key"
 
 	release2 "github.com/ubogdan/network-manager-api/repository/release"
 	"github.com/ubogdan/network-manager-api/service/license"
@@ -25,18 +25,23 @@ import (
 	"github.com/ubogdan/network-manager-api/transport/http/middleware"
 )
 
-var listen, boltdb string
+var listen, licenseKey, boltdb string
 var s3AccessKey, s3SecretKey = os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
 
 func main() {
 	flag.StringVar(&boltdb, "database", "bolt.db", "")
+	flag.StringVar(&licenseKey, "sign", "signing.key", "")
 	flag.StringVar(&listen, "listen", ":8080", "http listen addres")
 	flag.Parse()
 
 	logSvc := logrus.New()
 
+	privateKey, err := key.Load(licenseKey)
+	if err != nil {
+		logSvc.Fatalf("read license key %s", err)
+	}
+
 	var db *bolthold.Store
-	var err error
 	if s3AccessKey != "" && s3SecretKey != "" {
 		awsSession, e := session.NewSession(&aws.Config{
 			Credentials:      credentials.NewStaticCredentials(s3AccessKey, s3SecretKey, ""),
@@ -45,16 +50,17 @@ func main() {
 			S3ForcePathStyle: aws.Bool(true),
 		})
 		if e != nil {
-			log.Fatalf("session.NewSession %s", e)
+			logSvc.Fatalf("session.NewSession %s", e)
 		}
 		s3boltdb := bolthold.WithS3(s3.New(awsSession), os.Getenv("S3_BUCKET"), os.Getenv("S3_PREFIX"))
 		s3boltdb.Log = logSvc
 		db, err = s3boltdb.Open(boltdb, 0755, nil)
 	} else {
+		logSvc.Infof("warning: s3 sync disabled.")
 		db, err = bolthold.Open(boltdb, 0755, nil)
 	}
 	if err != nil {
-		log.Fatalf("bolthold.Open %s", err)
+		logSvc.Fatalf("bolthold.Open %s", err)
 	}
 	defer db.Close()
 
@@ -69,7 +75,7 @@ func main() {
 		middleware.RateLimit(10), // 10 requests/second
 	)
 
-	licSvc := license.New(bolt.License(db))
+	licSvc := license.New(bolt.License(db), privateKey)
 	relSvc := release.New(release2.New())
 
 	muxRouter := router.NewMuxRouter(api, logSvc)

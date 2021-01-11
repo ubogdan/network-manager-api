@@ -1,11 +1,8 @@
 package model
 
-import (
-	"github.com/coreos/go-semver/semver"
-)
-
 type Release struct {
-	Version semver.Version
+	Channel ReleaseChannel `boltholdIndex:"serial"`
+	Version string
 }
 
 type ReleaseChannel string

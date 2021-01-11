@@ -2,10 +2,13 @@ package service
 
 import (
 	"github.com/ubogdan/network-manager-api/model"
-	"github.com/ubogdan/network-manager-api/repository"
 )
 
 type License interface {
-	repository.License
-	Renew(license *model.License) error
+	FindAll() ([]model.License, error)
+	Find(id uint64) (*model.License, error)
+	Create(license *model.License) error
+	Update(license *model.License) error
+	Delete(id uint64) error
+	Renew(license *model.License) ([]byte, error)
 }

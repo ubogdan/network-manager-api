@@ -10,6 +10,6 @@ type Release struct {
 
 func FromRelease(rel *model.Release) Release {
 	return Release{
-		Version: rel.Version.String(),
+		Version: rel.Version,
 	}
 }
