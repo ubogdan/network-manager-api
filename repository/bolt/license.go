@@ -19,7 +19,8 @@ func License(boltholdStore *bolthold.Store) *license {
 }
 
 func (s *license) FindAll() ([]model.License, error) {
-	return nil, nil
+	var licenses []model.License
+	return licenses, s.store.Find(&licenses, bolthold.Where(bolthold.Key).Ne(uint64(0)))
 }
 
 func (s *license) Find(id uint64) (*model.License, error) {
@@ -36,5 +37,5 @@ func (s *license) Update(license *model.License) error {
 }
 
 func (s *license) Delete(id uint64) error {
-	return nil
+	return s.store.Delete(id, model.License{})
 }
