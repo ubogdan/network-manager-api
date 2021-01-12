@@ -52,7 +52,7 @@ func (s *license) Renew(license *model.License) ([]byte, error) {
 		return nil, model.LicenseNotFound
 	}
 
-	licenseSerial, err := serial.Generate("", model.ProductName, license.HardwareID, 1)
+	licenseSerial, err := serial.Generate("", license.HardwareID, 1)
 	if err != nil {
 		return nil, err
 	}

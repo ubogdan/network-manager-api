@@ -1,14 +1,11 @@
 package response
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"encoding/base64"
-	"io"
 	"net/http"
 
 	"github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/repository/crypto"
 )
 
 type License struct {
@@ -25,21 +22,11 @@ func LicenseToEncryptedPayload(w http.ResponseWriter, payload, key []byte) error
 	writer := base64.NewEncoder(base64.StdEncoding, w)
 	defer writer.Close()
 
-	block, err := aes.NewCipher(key)
+	bytes, err := crypto.Encrypt(key, payload)
 	if err != nil {
-		return err
+
 	}
 
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return err
-	}
-
-	nonce := make([]byte, aesGCM.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
-	}
-
-	_, err = writer.Write(aesGCM.Seal(nil, nonce, payload, nil))
+	_, err = writer.Write(bytes)
 	return err
 }

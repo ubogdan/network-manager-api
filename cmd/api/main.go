@@ -15,7 +15,7 @@ import (
 
 	"github.com/ubogdan/network-manager-api/pkg/bolthold"
 	"github.com/ubogdan/network-manager-api/repository/bolt"
-	"github.com/ubogdan/network-manager-api/repository/key"
+	"github.com/ubogdan/network-manager-api/repository/crypto"
 
 	release2 "github.com/ubogdan/network-manager-api/repository/release"
 	"github.com/ubogdan/network-manager-api/service/license"
@@ -36,7 +36,7 @@ func main() {
 
 	logSvc := logrus.New()
 
-	privateKey, err := key.Load(licenseKey)
+	privateKey, err := crypto.Load(licenseKey)
 	if err != nil {
 		logSvc.Fatalf("read license key %s", err)
 	}

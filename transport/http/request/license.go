@@ -1,15 +1,13 @@
 package request
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 
 	"github.com/ubogdan/network-manager-api/model"
+	"github.com/ubogdan/network-manager-api/repository/crypto"
 )
 
 type License struct {
@@ -50,21 +48,7 @@ func LicenseFromEncryptedPayload(reader io.ReadCloser, key []byte) (*LicenseRene
 	}
 	defer reader.Close()
 
-	if len(ciphertext) < aes.BlockSize+12 {
-		return nil, errors.New("ciphertext too short")
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	plaintext, err := aesGCM.Open(nil, ciphertext[:12], ciphertext[12:], nil)
+	plaintext, err := crypto.Decrypt(key, ciphertext)
 	if err != nil {
 		return nil, err
 	}
