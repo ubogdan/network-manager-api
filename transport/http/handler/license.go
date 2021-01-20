@@ -30,7 +30,7 @@ func NewLicense(router service.Router, licSvc service.License, logger service.Lo
 	router.Delete("/licenses/{id}", handler.Delete)
 
 	// Client Handler
-	router.Put("/license/{serial}/renew", handler.Renew)
+	router.Put("/renew/{serial}", handler.Renew)
 }
 
 func (h *license) List(w http.ResponseWriter, r *http.Request) error {

@@ -16,8 +16,6 @@ import (
 	"github.com/ubogdan/network-manager-api/pkg/bolthold"
 	"github.com/ubogdan/network-manager-api/repository/bolt"
 	"github.com/ubogdan/network-manager-api/repository/crypto"
-
-	release2 "github.com/ubogdan/network-manager-api/repository/release"
 	"github.com/ubogdan/network-manager-api/service/license"
 	"github.com/ubogdan/network-manager-api/service/release"
 	"github.com/ubogdan/network-manager-api/service/router"
@@ -29,14 +27,14 @@ var listen, licenseKey, boltdb string
 var s3AccessKey, s3SecretKey = os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
 
 func main() {
-	flag.StringVar(&boltdb, "database", "bolt.db", "")
+	flag.StringVar(&boltdb, "database", "netmgrapi.db", "")
 	flag.StringVar(&licenseKey, "sign", "signing.key", "")
 	flag.StringVar(&listen, "listen", ":8080", "http listen addres")
 	flag.Parse()
 
 	logSvc := logrus.New()
 
-	privateKey, err := crypto.Load(licenseKey)
+	licenseSigner, err := crypto.Load(licenseKey)
 	if err != nil {
 		logSvc.Fatalf("read license key %s", err)
 	}
@@ -72,11 +70,11 @@ func main() {
 			middleware.WithHeaders("Content-Type", "Authorization"),
 			middleware.WithMethods(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete),
 		),
-		middleware.RateLimit(10), // 10 requests/second
+		middleware.RateLimit(1), // 1 requests/second
 	)
 
-	licSvc := license.New(bolt.License(db), privateKey)
-	relSvc := release.New(release2.New())
+	licSvc := license.New(bolt.License(db), "", licenseSigner)
+	relSvc := release.New(bolt.New())
 
 	muxRouter := router.NewMuxRouter(api, logSvc)
 	handler.NewLicense(muxRouter, licSvc, logSvc)

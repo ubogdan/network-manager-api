@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"time"
 
+	"github.com/pkg/errors"
 	lic "github.com/ubogdan/license"
 
 	"github.com/ubogdan/network-manager-api/model"
@@ -13,15 +14,18 @@ import (
 )
 
 type license struct {
-	Signer  crypto.Signer
-	License repository.License
+	License         repository.License
+	LicenseSigner   crypto.Signer
+	SerialNumberKey string
 }
 
-var _ service.License = New(nil, nil)
+var _ service.License = New(nil, "", nil)
 
-func New(lic repository.License, key crypto.Signer) *license {
+func New(lic repository.License, privateKey string, signer crypto.Signer) *license {
 	return &license{
-		License: lic,
+		License:         lic,
+		LicenseSigner:   signer,
+		SerialNumberKey: privateKey,
 	}
 }
 
@@ -45,22 +49,32 @@ func (s *license) Delete(id uint64) error {
 	return s.License.Delete(id)
 }
 
-func (s *license) Renew(license *model.License) ([]byte, error) {
+func (s *license) Renew(l *model.License) ([]byte, error) {
 
-	_, err := s.License.FindByHardwareID(license.HardwareID)
+	license, err := s.License.FindByHardwareID(l.HardwareID)
 	if err != nil {
 		return nil, model.LicenseNotFound
 	}
 
-	licenseSerial, err := serial.Generate("", license.HardwareID, 1)
+	if l.Serial != license.Serial {
+		return nil, model.LicenseNotFound
+	}
+
+	//
+	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now(), model.DefaultValidity)
+	if err != nil {
+		return nil, err
+	}
+	license.LastIssued = validFromTime.Unix()
+
+	validUntilTime := validFromTime.Add(model.DefaultValidity) // 1 month
+
+	licenseSerial, err := serial.Generate(s.SerialNumberKey, license.HardwareID, validUntilTime.Unix())
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO : from license data
-	validFromTime := time.Now()
-	validUntilTime := validFromTime.Add(30 * 24 * time.Hour) // 1 month
-
+	// Create basic license Data
 	licenseData := lic.License{
 		ProductName:  model.ProductName,
 		SerialNumber: licenseSerial,
@@ -70,5 +84,39 @@ func (s *license) Renew(license *model.License) ([]byte, error) {
 		ValidUntil:   validUntilTime,
 	}
 
-	return lic.CreateLicense(&licenseData, s.Signer)
+	// Add license Features
+	for _, feature := range license.Features {
+		licenseData.Features = append(licenseData.Features, lic.Feature{
+			Oid:         feature.Name.Oid(),
+			Description: feature.Name.Description(),
+			Expire:      feature.Expire,
+			Limit:       feature.Limit,
+		})
+	}
+
+	// Generate license
+	lbytes, err := lic.CreateLicense(&licenseData, s.LicenseSigner)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update database details
+	err = s.License.Update(license)
+	if err != nil {
+		return nil, err
+	}
+
+	return lbytes, nil
+}
+
+func nextValidPeriod(created, expire, now time.Time, validity time.Duration) (time.Time, error) {
+	if created.Add(validity).After(expire) {
+		return created, errors.Wrapf(model.LicenseExpired, "no more days to add from %d to %d for cureent validity period of %d days", created.Unix(), expire.Unix(), validity/24/time.Hour)
+	}
+
+	if created.Add(validity).Before(now) {
+		return nextValidPeriod(created.Add(validity), expire, now, validity)
+	}
+
+	return created, nil
 }

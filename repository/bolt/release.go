@@ -1,4 +1,4 @@
-package release
+package bolt
 
 import (
 	"github.com/ubogdan/network-manager-api/model"
