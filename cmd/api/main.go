@@ -24,6 +24,7 @@ import (
 )
 
 var listen, licenseKey, boltdb string
+var AuthorizationKey = os.Getenv("API_BEARER_AUTH")
 var s3AccessKey, s3SecretKey = os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
 
 func main() {
@@ -71,6 +72,7 @@ func main() {
 			middleware.WithMethods(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete),
 		),
 		middleware.RateLimit(1), // 1 requests/second
+		middleware.Authorization(AuthorizationKey),
 	)
 
 	licSvc := license.New(bolt.License(db), "", licenseSigner)
