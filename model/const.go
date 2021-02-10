@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	ProductName     = "Network Manager Pro"
-	DefaultValidity = 30 * 24 * time.Hour
+	ProductName        = "Network Manager Pro"
+	DefaultGracePeriod = 7 * 24 * time.Hour
+	DefaultValidity    = 30 * 24 * time.Hour
 )
 
 var (

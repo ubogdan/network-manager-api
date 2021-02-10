@@ -28,11 +28,15 @@ func LicenseToEncryptedPayload(w http.ResponseWriter, payload, key []byte) error
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.WriteHeader(200)
 
+	writer := base64.NewEncoder(base64.StdEncoding, w)
+
 	bytes, err := crypto.Encrypt(key, payload)
 	if err != nil {
 		return err
 	}
+	defer writer.Close()
 
-	_, err = base64.NewEncoder(base64.StdEncoding, w).Write(bytes)
+	_, err = writer.Write(bytes)
+
 	return err
 }
