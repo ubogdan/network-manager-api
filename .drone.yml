@@ -46,11 +46,7 @@ trigger:
     - refs/tags/*
 
 steps:
-  - name: Backend-Build
-    pull: always
-    image: golang:1.15-alpine3.12
-    commands:
-      - make build
+
 
   - name: Service-Publish
     image: plugins/docker
