@@ -48,7 +48,7 @@ trigger:
 steps:
   - name: Backend-Build
     pull: always
-    image: golang:1.15
+    image: golang:1.15-alpine3.12
     commands:
       - make build
 
