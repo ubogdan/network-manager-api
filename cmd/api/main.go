@@ -88,6 +88,7 @@ func main() {
 	muxRouter := router.NewMuxRouter(api, logSvc)
 	handler.NewLicense(muxRouter, licSvc, authorizedKeyBytes, logSvc)
 	handler.NewRelease(muxRouter, relSvc, logSvc)
+	handler.NewVersion(muxRouter)
 
 	// ----------------
 	httpd := &http.Server{
