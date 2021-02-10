@@ -11,6 +11,8 @@ platform:
 trigger:
   branch:
     - master
+  event:
+    - push
 
 steps:
   - name: Backend-Test

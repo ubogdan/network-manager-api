@@ -1,4 +1,4 @@
-FROM golang:1.15
+FROM golang:1.15 AS build
 
 COPY . .
 
@@ -12,6 +12,6 @@ RUN apt-get update && \
 RUN useradd -m -u 1000 service
 USER service
 
-COPY bin/api /bin/api
+COPY --from=build /go/bin/api /bin/api
 
 CMD /bin/api
