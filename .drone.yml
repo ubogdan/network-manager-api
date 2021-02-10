@@ -49,8 +49,7 @@ trigger:
 
 steps:
 
-
-  - name: Service-Publish
+  - name: Docker-Build
     image: plugins/docker
     settings:
       auto_tag: true
