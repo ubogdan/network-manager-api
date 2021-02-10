@@ -9,10 +9,19 @@ import (
 )
 
 type License struct {
+	Created    int64  `json:"created"`
+	Expire     int64  `json:"expire"`
+	Serial     string `json:"serial"`
+	LastIssued int64  `json:"last_issued"`
 }
 
 func FromLicese(lic *model.License) License {
-	return License{}
+	return License{
+		Created:    lic.Created,
+		Expire:     lic.Expire,
+		Serial:     lic.Serial,
+		LastIssued: lic.LastIssued,
+	}
 }
 
 func LicenseToEncryptedPayload(w http.ResponseWriter, payload, key []byte) error {

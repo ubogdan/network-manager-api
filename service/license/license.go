@@ -2,6 +2,7 @@ package license
 
 import (
 	"crypto"
+	"encoding/hex"
 	"time"
 
 	"github.com/pkg/errors"
@@ -16,12 +17,12 @@ import (
 type license struct {
 	License         repository.License
 	LicenseSigner   crypto.Signer
-	SerialNumberKey string
+	SerialNumberKey []byte
 }
 
-var _ service.License = New(nil, "", nil)
+var _ service.License = New(nil, nil, nil)
 
-func New(lic repository.License, privateKey string, signer crypto.Signer) *license {
+func New(lic repository.License, privateKey []byte, signer crypto.Signer) *license {
 	return &license{
 		License:         lic,
 		LicenseSigner:   signer,
@@ -38,11 +39,34 @@ func (s *license) Find(id uint64) (*model.License, error) {
 }
 
 func (s *license) Create(license *model.License) error {
-	return s.Create(license)
+
+	if license.Created == 0 {
+		license.Created = time.Now().Unix()
+	}
+
+	if license.Expire == 0 {
+		license.Expire = time.Unix(license.Created, 0).Add(12 * model.DefaultValidity).Unix()
+	}
+
+	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now(), model.DefaultValidity)
+	if err != nil {
+		return err
+	}
+
+	validUntilTime := validFromTime.Add(model.DefaultValidity) // 1 month
+
+	licenseSerial, err := serial.Generate(hex.EncodeToString(s.SerialNumberKey), license.HardwareID, validUntilTime.Unix())
+	if err != nil {
+		return err
+	}
+
+	license.Serial = licenseSerial
+
+	return s.License.Create(license)
 }
 
 func (s *license) Update(license *model.License) error {
-	return s.Update(license)
+	return s.License.Update(license)
 }
 
 func (s *license) Delete(id uint64) error {
@@ -69,7 +93,7 @@ func (s *license) Renew(l *model.License) ([]byte, error) {
 
 	validUntilTime := validFromTime.Add(model.DefaultValidity) // 1 month
 
-	licenseSerial, err := serial.Generate(s.SerialNumberKey, license.HardwareID, validUntilTime.Unix())
+	licenseSerial, err := serial.Generate(hex.EncodeToString(s.SerialNumberKey), license.HardwareID, validUntilTime.Unix())
 	if err != nil {
 		return nil, err
 	}

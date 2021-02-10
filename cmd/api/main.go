@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"net/http"
 	"os"
@@ -23,17 +24,23 @@ import (
 	"github.com/ubogdan/network-manager-api/transport/http/middleware"
 )
 
-var listen, licenseKey, boltdb string
-var AuthorizationKey = os.Getenv("API_BEARER_AUTH")
-var s3AccessKey, s3SecretKey = os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
-
 func main() {
+	var listen, licenseKey, boltdb string
+
 	flag.StringVar(&boltdb, "database", "netmgrapi.db", "")
 	flag.StringVar(&licenseKey, "sign", "signing.key", "")
 	flag.StringVar(&listen, "listen", ":8080", "http listen addres")
 	flag.Parse()
 
 	logSvc := logrus.New()
+
+	s3AccessKey, s3SecretKey := os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
+	authorizedKey, authorizationKey := os.Getenv("AUTHORIZED_KEY"), os.Getenv("API_BEARER_AUTH")
+
+	authorizedKeyBytes, err := hex.DecodeString(authorizedKey)
+	if err != nil {
+		logSvc.Fatalf("invalid key %s", err)
+	}
 
 	licenseSigner, err := crypto.Load(licenseKey)
 	if err != nil {
@@ -72,14 +79,14 @@ func main() {
 			middleware.WithMethods(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete),
 		),
 		middleware.RateLimit(1), // 1 requests/second
-		middleware.Authorization(AuthorizationKey),
+		middleware.Authorization(authorizationKey),
 	)
 
-	licSvc := license.New(bolt.License(db), "", licenseSigner)
+	licSvc := license.New(bolt.License(db), authorizedKeyBytes, licenseSigner)
 	relSvc := release.New(bolt.New())
 
 	muxRouter := router.NewMuxRouter(api, logSvc)
-	handler.NewLicense(muxRouter, licSvc, logSvc)
+	handler.NewLicense(muxRouter, licSvc, authorizedKeyBytes, logSvc)
 	handler.NewRelease(muxRouter, relSvc, logSvc)
 
 	// ----------------

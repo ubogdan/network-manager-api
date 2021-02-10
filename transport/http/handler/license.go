@@ -13,18 +13,22 @@ import (
 )
 
 type license struct {
-	lic service.License
-	log service.Logger
+	secretKey []byte
+	license   service.License
+	log       service.Logger
 }
 
-func NewLicense(router service.Router, licSvc service.License, logger service.Logger) {
+// TODO replace secretKey with secret manager
+func NewLicense(router service.Router, licSvc service.License, secretKey []byte, logger service.Logger) {
 	handler := license{
-		lic: licSvc,
-		log: logger,
+		license:   licSvc,
+		log:       logger,
+		secretKey: secretKey,
 	}
 
 	// LicenseRenew MGMT
 	router.Get("/licenses", handler.List)
+	router.Get("/licenses/{id}", handler.Find)
 	router.Post("/licenses", handler.Create)
 	router.Put("/licenses/{id}", handler.Update)
 	router.Delete("/licenses/{id}", handler.Delete)
@@ -34,7 +38,7 @@ func NewLicense(router service.Router, licSvc service.License, logger service.Lo
 }
 
 func (h *license) List(w http.ResponseWriter, r *http.Request) error {
-	list, err := h.lic.FindAll()
+	list, err := h.license.FindAll()
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, nil)
 	}
@@ -48,18 +52,33 @@ func (h *license) Create(w http.ResponseWriter, r *http.Request) error {
 		return response.ToJSON(w, http.StatusBadRequest, err)
 	}
 	model := lic.ToModel()
-	err = h.lic.Create(&model)
+	err = h.license.Create(&model)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
 	return response.ToJSON(w, http.StatusOK, response.FromLicese(&model))
 }
 
+func (h *license) Find(w http.ResponseWriter, r *http.Request) error {
+	licenseID, err := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	if err != nil {
+		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
+	}
+
+	lic, err := h.license.Find(licenseID)
+	if err != nil {
+		return response.ToJSON(w, http.StatusInternalServerError, err)
+	}
+
+	return response.ToJSON(w, http.StatusOK, response.FromLicese(lic))
+
+}
+
 func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
 	licenseID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		return response.ToJSON(w, http.StatusBadRequest, "invalid user id")
+		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
 
 	var lic request.License
@@ -70,7 +89,7 @@ func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 	model := lic.ToModel()
 	model.ID = licenseID
 
-	err = h.lic.Update(&model)
+	err = h.license.Update(&model)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
@@ -84,7 +103,7 @@ func (h *license) Delete(w http.ResponseWriter, r *http.Request) error {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
 
-	err = h.lic.Delete(licenseID)
+	err = h.license.Delete(licenseID)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
@@ -93,13 +112,13 @@ func (h *license) Delete(w http.ResponseWriter, r *http.Request) error {
 
 // Renew client handler
 func (h *license) Renew(w http.ResponseWriter, r *http.Request) error {
-	params := mux.Vars(r)
-	serial := strings.TrimSpace(params["serial"])
-	if serial != "" {
+
+	serial := strings.TrimSpace(mux.Vars(r)["serial"])
+	if serial == "" {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid serial number")
 	}
 
-	renew, err := request.LicenseFromEncryptedPayload(r.Body, []byte{})
+	renew, err := request.LicenseFromEncryptedPayload(r.Body, h.secretKey)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, "invalid license data")
 	}
@@ -111,10 +130,10 @@ func (h *license) Renew(w http.ResponseWriter, r *http.Request) error {
 	//
 	model := renew.ToModel()
 
-	derBytes, err := h.lic.Renew(&model)
+	derBytes, err := h.license.Renew(&model)
 	if err != nil {
-		return response.ToJSON(w, http.StatusInternalServerError, "invalid serial number")
+		return response.ToJSON(w, http.StatusInternalServerError, "renewal denied")
 	}
 
-	return response.LicenseToEncryptedPayload(w, derBytes, nil)
+	return response.LicenseToEncryptedPayload(w, derBytes, h.secretKey)
 }

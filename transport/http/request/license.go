@@ -12,6 +12,8 @@ import (
 
 type License struct {
 	ID         uint64   `json:"id"`
+	Created    int64    `json:"created"`
+	Expire     int64    `json:"expire"`
 	HardwareID string   `json:"hardware_id"`
 	Customer   Customer `json:"customer"`
 }
@@ -24,6 +26,8 @@ type LicenseRenew struct {
 func (l *License) ToModel() model.License {
 	return model.License{
 		ID:         l.ID,
+		Created:    l.Created,
+		Expire:     l.Expire,
 		HardwareID: l.HardwareID,
 		Customer: model.Customer{
 			Name:         l.Customer.Name,
