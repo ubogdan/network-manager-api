@@ -85,13 +85,18 @@ func (s *license) Renew(l *model.License) ([]byte, error) {
 	}
 
 	//
-	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now(), model.DefaultValidity)
+	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now().Add(model.DefaultGracePeriod), model.DefaultValidity)
 	if err != nil {
 		return nil, err
 	}
-	license.LastIssued = validFromTime.Unix()
 
 	validUntilTime := validFromTime.Add(model.DefaultValidity) // 1 month
+
+	if validFromTime.After(time.Now()) {
+		validFromTime = time.Now()
+	}
+
+	license.LastIssued = validFromTime.Unix()
 
 	licenseSerial, err := serial.Generate(hex.EncodeToString(s.SerialNumberKey), license.HardwareID, validUntilTime.Unix())
 	if err != nil {
