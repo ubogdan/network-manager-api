@@ -12,5 +12,6 @@ func FromJSON(reader io.ReadCloser, payload interface{}) error {
 }
 
 func UnmarshalWithLimit(reader io.ReadCloser, size int64, payload interface{}) error {
+	defer reader.Close()
 	return json.NewDecoder(io.LimitReader(reader, size)).Decode(&payload)
 }
