@@ -3,15 +3,14 @@ package request
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
+
+	"github.com/ubogdan/network-manager-api/model"
 )
 
 func FromJSON(reader io.ReadCloser, payload interface{}) error {
-	body, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
+	return UnmarshalWithLimit(reader, model.ReadLimit1MB, payload)
+}
 
-	return json.Unmarshal(body, &payload)
+func UnmarshalWithLimit(reader io.ReadCloser, size int64, payload interface{}) error {
+	return json.NewDecoder(io.LimitReader(reader, size)).Decode(&payload)
 }
