@@ -4,6 +4,7 @@ import (
 	"encoding/asn1"
 )
 
+// Feature is the license capability
 type Feature struct {
 	Name   FeatureType
 	Expire int64

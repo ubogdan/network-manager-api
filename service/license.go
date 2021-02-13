@@ -4,6 +4,7 @@ import (
 	"github.com/ubogdan/network-manager-api/model"
 )
 
+// License service interface
 type License interface {
 	FindAll() ([]model.License, error)
 	Find(id uint64) (*model.License, error)

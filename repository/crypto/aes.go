@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+// Encrypt a payload with the given key using aesGCM cipher
 func Encrypt(key, payload []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -30,6 +31,7 @@ func Encrypt(key, payload []byte) ([]byte, error) {
 	return append(nonce, encrBytes...), nil
 }
 
+// EncryptWithStringKey is helper function what can be used with hex encoded key
 func EncryptWithStringKey(privateKey string, payload []byte) ([]byte, error) {
 	key, err := hex.DecodeString(privateKey)
 	if err != nil {
@@ -38,6 +40,7 @@ func EncryptWithStringKey(privateKey string, payload []byte) ([]byte, error) {
 	return Encrypt(key, payload)
 }
 
+// Decrypt an aesGCM payload using a given key
 func Decrypt(key, payload []byte) ([]byte, error) {
 
 	block, err := aes.NewCipher(key)
@@ -53,6 +56,7 @@ func Decrypt(key, payload []byte) ([]byte, error) {
 	return aesGCM.Open(nil, payload[:aesGCM.NonceSize()], payload[aesGCM.NonceSize():], nil)
 }
 
+// DecryptWithStringKey is helper function what can be used with hex encoded key
 func DecryptWithStringKey(privateKey string, payload []byte) ([]byte, error) {
 	key, err := hex.DecodeString(privateKey)
 	if err != nil {

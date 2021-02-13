@@ -22,6 +22,7 @@ type license struct {
 
 var _ service.License = New(nil, nil, nil)
 
+// New returns license service implementation
 func New(lic repository.License, privateKey []byte, signer crypto.Signer) *license {
 	return &license{
 		License:         lic,
@@ -30,14 +31,17 @@ func New(lic repository.License, privateKey []byte, signer crypto.Signer) *licen
 	}
 }
 
+// FindAll returns license list
 func (s *license) FindAll() ([]model.License, error) {
 	return s.License.FindAll()
 }
 
+// Find return license by id
 func (s *license) Find(id uint64) (*model.License, error) {
 	return s.License.Find(id)
 }
 
+// Create new license
 func (s *license) Create(license *model.License) error {
 
 	if license.Created == 0 {
@@ -65,14 +69,17 @@ func (s *license) Create(license *model.License) error {
 	return s.License.Create(license)
 }
 
+// Update existing license
 func (s *license) Update(license *model.License) error {
 	return s.License.Update(license)
 }
 
+// Delete license by id
 func (s *license) Delete(id uint64) error {
 	return s.License.Delete(id)
 }
 
+// Renew license
 func (s *license) Renew(l *model.License) ([]byte, error) {
 
 	license, err := s.License.FindByHardwareID(l.HardwareID)

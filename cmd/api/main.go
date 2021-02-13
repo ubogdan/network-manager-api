@@ -83,7 +83,7 @@ func main() {
 	)
 
 	licSvc := license.New(bolt.License(db), authorizedKeyBytes, licenseSigner)
-	relSvc := release.New(bolt.New())
+	relSvc := release.New(bolt.Release())
 
 	muxRouter := router.NewMuxRouter(api, logSvc)
 	handler.NewLicense(muxRouter, licSvc, authorizedKeyBytes, logSvc)
