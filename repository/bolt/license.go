@@ -39,7 +39,12 @@ func (s *license) FindByHardwareID(hardwareID string) (*model.License, error) {
 
 // Create a new license record
 func (s *license) Create(license *model.License) error {
-	return s.store.Insert(bolthold.NextSequence(), license)
+	var lic model.License
+	err := s.store.FindOne(&lic, bolthold.Where("HardwareID").Eq(license.HardwareID))
+	if err != nil {
+		return s.store.Insert(bolthold.NextSequence(), license)
+	}
+	return model.LicenseAlreadyExists
 }
 
 // Update a license record

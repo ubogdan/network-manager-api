@@ -15,6 +15,7 @@ const (
 )
 
 var (
-	LicenseNotFound = errors.New("License not found")
-	LicenseExpired  = errors.New("license ")
+	LicenseAlreadyExists = errors.New("a license for this hardware id already exists")
+	LicenseNotFound      = errors.New("license not found")
+	LicenseExpired       = errors.New("license expired")
 )

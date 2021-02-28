@@ -32,6 +32,16 @@ func TestLicense(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, *expect, license)
 
+	duplicate := model.License{
+		Serial:     "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX",
+		HardwareID: "3b36e4c70427fc69caf943aa5c975",
+		Customer: model.Customer{
+			Name: "Some customer",
+		},
+	}
+	err = lic.Create(&duplicate)
+	assert.Error(t, err)
+
 	expect, err = lic.FindByHardwareID(license.HardwareID)
 	assert.NoError(t, err)
 	assert.Equal(t, *expect, license)
