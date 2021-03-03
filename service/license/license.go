@@ -41,6 +41,11 @@ func (s *license) Find(id uint64) (*model.License, error) {
 	return s.License.Find(id)
 }
 
+// FindByHardwareID return license by HardwareID.
+func (s *license) FindByHardwareID(hardwareID string) (*model.License, error) {
+	return s.License.FindByHardwareID(hardwareID)
+}
+
 // Create new license.
 func (s *license) Create(license *model.License) error {
 	if license.Created == 0 {
@@ -79,16 +84,7 @@ func (s *license) Delete(id uint64) error {
 }
 
 // Renew license.
-func (s *license) Renew(l *model.License) ([]byte, error) {
-	license, err := s.License.FindByHardwareID(l.HardwareID)
-	if err != nil {
-		return nil, model.ErrLicenseNotFound
-	}
-
-	if l.Serial != license.Serial {
-		return nil, model.ErrLicenseNotFound
-	}
-
+func (s *license) Renew(license *model.License) ([]byte, error) {
 	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now().Add(model.DefaultGracePeriod), model.DefaultValidity)
 	if err != nil {
 		return nil, err
