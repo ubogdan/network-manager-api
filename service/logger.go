@@ -1,6 +1,6 @@
 package service
 
-// Logger service interface
+// Logger service definition
 type Logger interface {
 	Debugf(string, ...interface{})
 	Infof(string, ...interface{})

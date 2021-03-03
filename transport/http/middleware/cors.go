@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	corsOrigin  = "Access-Control-Allow-Origin"
-	corsHeaders = "Access-Control-Allow-Headers"
-	corsMethods = "Access-Control-Allow-Methods"
+	CorsAllowOriginHeader  = "Access-Control-Allow-Origin"
+	CorsAllowHeadersHeader = "Access-Control-Allow-Headers"
+	CorsAllowMethodsHeader = "Access-Control-Allow-Methods"
 )
 
 type corsOptions struct {
@@ -17,36 +17,43 @@ type corsOptions struct {
 	headers []string
 }
 
-// corsOptions Middleware
+// CORS Middleware.
 func CORS(options ...func(*corsOptions)) func(next http.Handler) http.Handler {
 	cors := &corsOptions{
 		Origin:  "*",
 		headers: []string{"Content-Type"},
 	}
+
 	for _, optionFn := range options {
 		optionFn(cors)
 	}
+
 	allowMethods := strings.Join(cors.methods, ", ")
+
 	allowHeaders := strings.Join(cors.headers, ", ")
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set(corsOrigin, cors.Origin)
-			w.Header().Set(corsMethods, allowMethods)
-			w.Header().Set(corsHeaders, allowHeaders)
+			w.Header().Set(CorsAllowOriginHeader, cors.Origin)
+			w.Header().Set(CorsAllowMethodsHeader, allowMethods)
+			w.Header().Set(CorsAllowHeadersHeader, allowHeaders)
 			if r.Method == http.MethodOptions {
 				return
 			}
+
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
+// WithMethods godoc.
 func WithMethods(methods ...string) func(*corsOptions) {
 	return func(c *corsOptions) {
 		c.methods = methods
 	}
 }
 
+// WithHeaders godoc.
 func WithHeaders(headers ...string) func(*corsOptions) {
 	return func(c *corsOptions) {
 		c.headers = headers

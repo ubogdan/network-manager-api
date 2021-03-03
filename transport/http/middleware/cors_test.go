@@ -1,4 +1,4 @@
-package middleware
+package middleware_test
 
 import (
 	"net/http"
@@ -7,9 +7,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ubogdan/network-manager-api/transport/http/middleware"
 )
 
 func TestCORS(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		method       string
 		allowOrigin  string
@@ -30,21 +34,19 @@ func TestCORS(t *testing.T) {
 
 	for _, test := range tests {
 		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, w.Header().Get(corsOrigin), test.allowOrigin)
-			assert.Equal(t, w.Header().Get(corsHeaders), strings.Join(test.allowHeaders, ", "))
-			assert.Equal(t, w.Header().Get(corsMethods), strings.Join(test.allowMethods, ", "))
+			assert.Equal(t, w.Header().Get(middleware.CorsAllowOriginHeader), test.allowOrigin)
+			assert.Equal(t, w.Header().Get(middleware.CorsAllowHeadersHeader), strings.Join(test.allowHeaders, ", "))
+			assert.Equal(t, w.Header().Get(middleware.CorsAllowMethodsHeader), strings.Join(test.allowMethods, ", "))
 		})
 
-		handlerToTest := CORS(
-			WithHeaders(test.allowHeaders...),
-			WithMethods(test.allowMethods...),
+		handlerToTest := middleware.CORS(
+			middleware.WithHeaders(test.allowHeaders...),
+			middleware.WithMethods(test.allowMethods...),
 		)(next)
 
 		// create a mock request to use
 		req := httptest.NewRequest(test.method, "http://testing", nil)
 
-		// call the handler using a mock response recorder (we'll not use that anyway)
 		handlerToTest.ServeHTTP(httptest.NewRecorder(), req)
-
 	}
 }

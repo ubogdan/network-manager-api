@@ -10,6 +10,7 @@ import (
 )
 
 func TestEncryptDecrypt(t *testing.T) {
+	t.Parallel()
 
 	// Generate random private key
 	privateKeyBytes := make([]byte, 32)
@@ -22,10 +23,10 @@ func TestEncryptDecrypt(t *testing.T) {
 	expect, err := Decrypt(privateKeyBytes, encryptedBytes)
 	assert.NoError(t, err)
 	assert.Equal(t, expect, samplePayload)
-
 }
 
 func TestEncryptDecryptWithString(t *testing.T) {
+	t.Parallel()
 
 	// Generate random private key
 	privateKeyBytes := make([]byte, 32)
@@ -42,6 +43,6 @@ func TestEncryptDecryptWithString(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	assert.Equal(t, expect, samplePayload)
 
+	assert.Equal(t, expect, samplePayload)
 }

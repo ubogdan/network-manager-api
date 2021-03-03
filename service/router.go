@@ -6,7 +6,7 @@ import (
 
 type RouteHandler func(w http.ResponseWriter, r *http.Request) error
 
-// Router service interface
+// Router service definition.
 type Router interface {
 	Get(path string, handler RouteHandler)
 	Post(path string, handler RouteHandler)

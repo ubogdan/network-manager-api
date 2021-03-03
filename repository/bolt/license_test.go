@@ -11,6 +11,8 @@ import (
 )
 
 func TestLicense(t *testing.T) {
+	t.Parallel()
+
 	testdb := "test-license-create.db"
 	store, err := bolthold.Open(testdb, 0755, nil)
 	assert.NoError(t, err)

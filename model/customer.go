@@ -1,6 +1,6 @@
 package model
 
-// Customer is the license owner
+// Customer is the license owner.
 type Customer struct {
 	Name               string
 	Country            string

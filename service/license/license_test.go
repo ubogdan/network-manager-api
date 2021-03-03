@@ -8,6 +8,8 @@ import (
 )
 
 func TestNextValidPeriod(t *testing.T) {
+	t.Parallel()
+
 	tt := []struct {
 		Created  time.Time
 		Expire   time.Time

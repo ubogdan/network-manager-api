@@ -12,6 +12,6 @@ func NewVersion(router service.Router) {
 	router.Get("/version", Version)
 }
 
-func Version(w http.ResponseWriter, r *http.Request) error {
-	return response.ToJSON(w, http.StatusOK, response.Version{Version: model.Version.String()})
+func Version(w http.ResponseWriter, _ *http.Request) error {
+	return response.ToJSON(w, http.StatusOK, response.Version{Version: model.Version().String()})
 }

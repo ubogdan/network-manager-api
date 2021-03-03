@@ -5,16 +5,10 @@ import (
 )
 
 var (
-	// GitRepository is the git repository that was compiled
+	// GitRepository is the git repository that was compiled.
 	GitRepository string
-	// GitCommit is the git commit that was compiled
+	// GitCommit is the git commit that was compiled.
 	GitCommit string
-	// VersionMajor is for an API incompatible changes.
-	VersionMajor int64 = 0
-	// VersionMinor is for functionality in a backwards-compatible manner.
-	VersionMinor int64 = 0
-	// VersionPatch is for backwards-compatible bug fixes.
-	VersionPatch int64 = 5
 	// VersionPre indicates prerelease.
 	VersionPre = ""
 	// VersionDev indicates development branch. Releases will be empty string.
@@ -22,10 +16,17 @@ var (
 )
 
 // Version is the specification version that the package types support.
-var Version = semver.Version{
-	Major:      VersionMajor,
-	Minor:      VersionMinor,
-	Patch:      VersionPatch,
-	PreRelease: semver.PreRelease(VersionPre),
-	Metadata:   VersionDev,
+func Version() semver.Version {
+	return semver.Version{
+		// VersionMajor is for an API incompatible changes.
+		Major: 0,
+		// VersionMinor is for functionality in a backwards-compatible manner.
+		Minor: 0,
+		// VersionPatch is for backwards-compatible bug fixes.
+		Patch: 5,
+		// VersionPre indicates prerelease.
+		PreRelease: semver.PreRelease(VersionPre),
+		// VersionDev indicates development branch. Releases will be empty string.
+		Metadata: VersionDev,
+	}
 }

@@ -13,12 +13,13 @@ const (
 	ecc = "EC PRIVATE KEY"
 )
 
-// Load rsa or ecc private key from disk
+// Load rsa or ecc private key from disk.
 func Load(name string) (crypto.Signer, error) {
 	pemBytes, err := ioutil.ReadFile(name)
 	if err != nil {
 		return nil, err
 	}
+
 	block, _ := pem.Decode(pemBytes)
 	if block == nil {
 		return nil, errors.New("unable to decode pem data")

@@ -10,6 +10,7 @@ import (
 	"github.com/ubogdan/network-manager-api/repository/crypto"
 )
 
+// License request DTO.
 type License struct {
 	ID         uint64   `json:"id"`
 	Created    int64    `json:"created"`
@@ -18,11 +19,13 @@ type License struct {
 	Customer   Customer `json:"customer"`
 }
 
-type LicenseRenew struct {
+// Renew request DTO.
+type Renew struct {
 	Serial     string `json:"serial"`
 	HardwareID string `json:"hardware_id"`
 }
 
+// ToModel converts license DTO to license model.
 func (l *License) ToModel() model.License {
 	return model.License{
 		ID:         l.ID,
@@ -38,14 +41,16 @@ func (l *License) ToModel() model.License {
 	}
 }
 
-func (l *LicenseRenew) ToModel() model.License {
+// ToModel converts renew DTO to license model.
+func (l *Renew) ToModel() model.License {
 	return model.License{
 		HardwareID: l.HardwareID,
 		Serial:     l.Serial,
 	}
 }
 
-func LicenseFromEncryptedPayload(reader io.ReadCloser, key []byte) (*LicenseRenew, error) {
+// LicenseFromEncryptedPayload godoc.
+func LicenseFromEncryptedPayload(reader io.ReadCloser, key []byte) (*Renew, error) {
 	ciphertext, err := ioutil.ReadAll(base64.NewDecoder(base64.StdEncoding, reader))
 	if err != nil {
 		return nil, err
@@ -57,6 +62,7 @@ func LicenseFromEncryptedPayload(reader io.ReadCloser, key []byte) (*LicenseRene
 		return nil, err
 	}
 
-	var license LicenseRenew
+	var license Renew
+
 	return &license, json.Unmarshal(plaintext, &license)
 }

@@ -25,33 +25,39 @@ func NewRelease(router service.Router, relSvc service.Release, logger service.Lo
 	router.Put("/release", handler.Update)
 
 	// Client release channels
-	router.Get("/release/latest", handler.List(model.DevelopementChannel))
+	router.Get("/release/latest", handler.List(model.DevelopmentChannel))
 	router.Get("/release/stable", handler.List(model.ProductionChannel))
 }
 
-// List client handler
+// List releases.
 func (h *release) List(channel string) func(w http.ResponseWriter, r *http.Request) error {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		release, err := h.rel.Find(channel)
 		if err != nil {
 			return response.ToJSON(w, http.StatusInternalServerError, nil)
 		}
+
 		return response.ToJSON(w, http.StatusOK, response.FromRelease(release))
 	}
 }
 
+// Create release.
 func (h *release) Create(w http.ResponseWriter, r *http.Request) error {
-	var rel request.Release
-	err := request.FromJSON(r.Body, &rel)
+	var release request.Release
+
+	err := request.FromJSON(r.Body, &release)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, err)
 	}
-	model := rel.ToModel()
-	err = h.rel.Create(&model)
+
+	toModel := release.ToModel()
+
+	err = h.rel.Create(&toModel)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
-	return response.ToJSON(w, http.StatusOK, response.FromRelease(&model))
+
+	return response.ToJSON(w, http.StatusOK, response.FromRelease(&toModel))
 }
 
 func (h *release) Update(w http.ResponseWriter, r *http.Request) error {

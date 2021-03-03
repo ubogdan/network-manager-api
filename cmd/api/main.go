@@ -29,7 +29,7 @@ func main() {
 
 	flag.StringVar(&boltdb, "database", "netmgrapi.db", "")
 	flag.StringVar(&licenseKey, "sign", "signing.key", "")
-	flag.StringVar(&listen, "listen", ":8080", "http listen addres")
+	flag.StringVar(&listen, "listen", ":8080", "http listen address")
 	flag.Parse()
 
 	logSvc := logrus.New()
@@ -90,8 +90,7 @@ func main() {
 	handler.NewRelease(muxRouter, relSvc, logSvc)
 	handler.NewVersion(muxRouter)
 
-	// ----------------
-	httpd := &http.Server{
+	server := http.Server{
 		Addr:           listen,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -99,8 +98,8 @@ func main() {
 		Handler:        r,
 	}
 
-	err = httpd.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
-		logSvc.Errorf("httpd.Listen %s", err)
+		logSvc.Errorf("server.Listen %s", err)
 	}
 }

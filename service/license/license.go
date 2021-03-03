@@ -22,7 +22,7 @@ type license struct {
 
 var _ service.License = New(nil, nil, nil)
 
-// New returns license service implementation
+// New returns license service implementation.
 func New(lic repository.License, privateKey []byte, signer crypto.Signer) *license {
 	return &license{
 		License:         lic,
@@ -31,19 +31,18 @@ func New(lic repository.License, privateKey []byte, signer crypto.Signer) *licen
 	}
 }
 
-// FindAll returns license list
+// FindAll returns license list.
 func (s *license) FindAll() ([]model.License, error) {
 	return s.License.FindAll()
 }
 
-// Find return license by id
+// Find return license by id.
 func (s *license) Find(id uint64) (*model.License, error) {
 	return s.License.Find(id)
 }
 
-// Create new license
+// Create new license.
 func (s *license) Create(license *model.License) error {
-
 	if license.Created == 0 {
 		license.Created = time.Now().Unix()
 	}
@@ -69,29 +68,27 @@ func (s *license) Create(license *model.License) error {
 	return s.License.Create(license)
 }
 
-// Update existing license
+// Update existing license.
 func (s *license) Update(license *model.License) error {
 	return s.License.Update(license)
 }
 
-// Delete license by id
+// Delete license by id.
 func (s *license) Delete(id uint64) error {
 	return s.License.Delete(id)
 }
 
-// Renew license
+// Renew license.
 func (s *license) Renew(l *model.License) ([]byte, error) {
-
 	license, err := s.License.FindByHardwareID(l.HardwareID)
 	if err != nil {
-		return nil, model.LicenseNotFound
+		return nil, model.ErrLicenseNotFound
 	}
 
 	if l.Serial != license.Serial {
-		return nil, model.LicenseNotFound
+		return nil, model.ErrLicenseNotFound
 	}
 
-	//
 	validFromTime, err := nextValidPeriod(time.Unix(license.Created, 0), time.Unix(license.Expire, 0), time.Now().Add(model.DefaultGracePeriod), model.DefaultValidity)
 	if err != nil {
 		return nil, err
@@ -147,7 +144,7 @@ func (s *license) Renew(l *model.License) ([]byte, error) {
 
 func nextValidPeriod(created, expire, now time.Time, validity time.Duration) (time.Time, error) {
 	if created.Add(validity).After(expire) {
-		return created, errors.Wrapf(model.LicenseExpired, "no more days to add from %d to %d for cureent validity period of %d days", created.Unix(), expire.Unix(), validity/24/time.Hour)
+		return created, errors.Wrapf(model.ErrLicenseExpired, "no more days to add from %d to %d for cureent validity period of %d days", created.Unix(), expire.Unix(), validity/24/time.Hour)
 	}
 
 	if created.Add(validity).Before(now) {

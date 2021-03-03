@@ -8,6 +8,7 @@ import (
 	"github.com/ubogdan/network-manager-api/repository/crypto"
 )
 
+// License response DTO.
 type License struct {
 	Created    int64  `json:"created"`
 	Expire     int64  `json:"expire"`
@@ -15,7 +16,8 @@ type License struct {
 	LastIssued int64  `json:"last_issued"`
 }
 
-func FromLicese(lic *model.License) License {
+// FromLicense convert license model to license DTO.
+func FromLicense(lic *model.License) License {
 	return License{
 		Created:    lic.Created,
 		Expire:     lic.Expire,
@@ -24,6 +26,7 @@ func FromLicese(lic *model.License) License {
 	}
 }
 
+// LicenseToEncryptedPayload convert a license response to an encrypted payload.
 func LicenseToEncryptedPayload(w http.ResponseWriter, payload, key []byte) error {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.WriteHeader(200)

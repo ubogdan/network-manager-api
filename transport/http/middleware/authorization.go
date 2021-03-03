@@ -8,6 +8,7 @@ import (
 	"github.com/ubogdan/network-manager-api/transport/http/response"
 )
 
+// Authorization middleware
 func Authorization(authKey string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,29 +20,31 @@ func Authorization(authKey string) func(next http.Handler) http.Handler {
 						return errors.New("authorization required")
 					}
 
-					authparts := strings.Split(authorization, " ")
-					if len(authparts) != 2 {
+					split := strings.Split(authorization, " ")
+					if len(split) != 2 {
 						return errors.New("malformed authorization header")
 					}
 
-					switch strings.ToLower(authparts[0]) {
+					switch strings.ToLower(split[0]) {
 					case "bearer":
-						if authparts[1] != authValue {
+						if split[1] != authValue {
 							return errors.New("malformed authorization header")
 						}
+
 						return nil
 					default:
-						return errors.New(authparts[0] + " not supported ")
+						return errors.New(split[0] + " not supported ")
 					}
 				}(authKey)
 
 				if authError != nil {
 					response.ToJSON(w, http.StatusUnauthorized, authError.Error())
+
 					return
 				}
 			}
+
 			next.ServeHTTP(w, r)
 		})
-
 	}
 }

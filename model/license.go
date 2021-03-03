@@ -1,6 +1,6 @@
 package model
 
-// License is the license model
+// License is the license model.
 type License struct {
 	ID         uint64 `boltholdKey:"ID"`
 	Created    int64

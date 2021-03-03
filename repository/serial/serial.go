@@ -12,6 +12,7 @@ import (
 )
 
 var handlerFn func(string, int64) (string, error)
+
 var pemBlock, _ = pem.Decode([]byte(`
 -----BEGIN VAULT FILE-----
 EP: serial.Generate
@@ -58,6 +59,7 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 
 	i := interp.New(interp.Options{})
 	i.Use(stdlib.Symbols)
+
 	_, err = i.Eval(string(script))
 	if err != nil {
 		return "", err
@@ -67,6 +69,7 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 	if !ok {
 		callFn = "main.Generate"
 	}
+
 	eval, err := i.Eval(callFn)
 	if err != nil {
 		return "", err
@@ -81,9 +84,11 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 		if len(results) < 2 {
 			return "", errors.New("unexpected response")
 		}
+
 		if results[1].Interface() != nil {
 			return "", results[1].Interface().(error)
 		}
+
 		return results[0].Interface().(string), nil
 	}
 
