@@ -70,13 +70,20 @@ platform:
 
 steps:
   - name: deploy
-    image: docker:17.04.0-dind
-    privileged: true
+    image: docker:latest
+    volumes:
+      - name: docker_socket
+        path: /var/run/docker.sock
     commands:
-      - "docker service update --image repo/image:${DRONE_TAG} service_name"
+      - env
 
 trigger:
   event:
     - promote
   target:
     - production
+
+volumes:
+  - name: docker_socket
+    host:
+      path: /var/run/docker.sock
