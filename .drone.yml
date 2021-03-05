@@ -75,7 +75,7 @@ steps:
       - name: docker_socket
         path: /var/run/docker.sock
     commands:
-      - "docker service update --image {DRONE_REPO}:{DRONE_TAG##v} {SERVICE_NAME}"
+      - "docker service update --image ${DRONE_REPO}:${DRONE_TAG##v} ${SERVICE_NAME}"
 
 trigger:
   event:
