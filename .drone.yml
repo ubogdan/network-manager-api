@@ -48,12 +48,10 @@ trigger:
     - refs/tags/*
 
 steps:
-
   - name: Docker-Build
     image: plugins/docker
     settings:
       auto_tag: true
-      registry: repo.treescale.com
       repo:
         from_secret: docker_repo
       username:
@@ -61,10 +59,24 @@ steps:
       password:
         from_secret: docker_password
 
-  - name: pushover
-    image: plugins/pushover
-    settings:
-      user:
-        from_secret: pushover_user
-      token:
-        from_secret: pushover_token
+---
+kind: pipeline
+type: docker
+name: deploy-linux-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: deploy
+    image: docker:17.04.0-dind
+    privileged: true
+    commands:
+      - "docker service update --image repo/image:${DRONE_TAG} service_name"
+
+trigger:
+  event:
+    - promote
+  target:
+    - production
