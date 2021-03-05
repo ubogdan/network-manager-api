@@ -44,8 +44,8 @@ platform:
 
 # Pipeline is executed only on tag push
 trigger:
-  ref:
-    - refs/tags/*
+  event:
+    - tag
 
 steps:
   - name: Docker-Build
