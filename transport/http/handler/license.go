@@ -151,7 +151,7 @@ func (h *license) Renew(w http.ResponseWriter, r *http.Request) error {
 		return response.ToJSON(w, http.StatusNotFound, "unexpected serial number")
 	}
 
-	derBytes, err := h.license.Renew(&toModel)
+	derBytes, err := h.license.Renew(license)
 	if err != nil {
 		h.log.Errorf("license.Renew %s: serial:%s hardwareID:%s error:%s",
 			r.RemoteAddr, toModel.Serial, toModel.HardwareID, err)

@@ -21,9 +21,9 @@ func Version() semver.Version {
 		// VersionMajor is for an API incompatible changes.
 		Major: 0,
 		// VersionMinor is for functionality in a backwards-compatible manner.
-		Minor: 0,
+		Minor: 1,
 		// VersionPatch is for backwards-compatible bug fixes.
-		Patch: 6,
+		Patch: 0,
 		// VersionPre indicates prerelease.
 		PreRelease: semver.PreRelease(VersionPre),
 		// VersionDev indicates development branch. Releases will be empty string.
