@@ -129,6 +129,9 @@ func (s *license) Renew(license *model.License) ([]byte, error) {
 		return nil, err
 	}
 
+	// Update last serial
+	license.Serial = licenseSerial
+
 	// Update database details
 	err = s.License.Update(license)
 	if err != nil {
