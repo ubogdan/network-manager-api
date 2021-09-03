@@ -28,7 +28,6 @@ type Renew struct {
 // ToModel converts license DTO to license model.
 func (l *License) ToModel() model.License {
 	return model.License{
-		ID:         l.ID,
 		Created:    l.Created,
 		Expire:     l.Expire,
 		HardwareID: l.HardwareID,

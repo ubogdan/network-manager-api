@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
 )
 
 const (
@@ -14,13 +13,8 @@ const (
 )
 
 // Load rsa or ecc private key from disk.
-func Load(name string) (crypto.Signer, error) {
-	pemBytes, err := ioutil.ReadFile(name)
-	if err != nil {
-		return nil, err
-	}
-
-	block, _ := pem.Decode(pemBytes)
+func Load(key string) (crypto.Signer, error) {
+	block, _ := pem.Decode([]byte(key))
 	if block == nil {
 		return nil, errors.New("unable to decode pem data")
 	}
