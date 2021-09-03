@@ -13,7 +13,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/traefik/yaegi v0.9.13
 	github.com/ubogdan/license v0.1.3
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/ratelimit v0.1.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
