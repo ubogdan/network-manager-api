@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"encoding/hex"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -44,7 +44,7 @@ func (h *license) List(w http.ResponseWriter, _ *http.Request) error {
 		return response.ToJSON(w, http.StatusInternalServerError, nil)
 	}
 
-	return response.ToJSON(w, http.StatusOK, list)
+	return response.ToJSON(w, http.StatusOK, response.FromLicenses(list))
 }
 
 // Create register a new license.
@@ -68,7 +68,9 @@ func (h *license) Create(w http.ResponseWriter, r *http.Request) error {
 
 // Find license by id.
 func (h *license) Find(w http.ResponseWriter, r *http.Request) error {
-	licenseID, err := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+
+	licenseID := mux.Vars(r)["id"]
+	_, err := hex.DecodeString(licenseID)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
@@ -84,7 +86,8 @@ func (h *license) Find(w http.ResponseWriter, r *http.Request) error {
 // Update license details.
 func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
-	licenseID, err := strconv.ParseUint(params["id"], 10, 64)
+	licenseID := params["id"]
+	_, err := hex.DecodeString(licenseID)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
@@ -97,7 +100,6 @@ func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	model := lic.ToModel()
-	model.ID = licenseID
 
 	err = h.license.Update(&model)
 	if err != nil {
@@ -110,8 +112,9 @@ func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 // Delete license.
 func (h *license) Delete(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
+	licenseID := params["id"]
 
-	licenseID, err := strconv.ParseUint(params["id"], 10, 64)
+	_, err := hex.DecodeString(licenseID)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, "invalid license id")
 	}
@@ -142,7 +145,7 @@ func (h *license) Renew(w http.ResponseWriter, r *http.Request) error {
 
 	toModel := renew.ToModel()
 
-	license, err := h.license.FindByHardwareID(toModel.HardwareID)
+	license, err := h.license.Find(toModel.HardwareID)
 	if err != nil {
 		return response.ToJSON(w, http.StatusNotFound, "no license match your hardware id")
 	}

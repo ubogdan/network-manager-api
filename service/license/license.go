@@ -37,13 +37,8 @@ func (s *license) FindAll() ([]model.License, error) {
 }
 
 // Find return license by id.
-func (s *license) Find(id uint64) (*model.License, error) {
+func (s *license) Find(id string) (*model.License, error) {
 	return s.License.Find(id)
-}
-
-// FindByHardwareID return license by HardwareID.
-func (s *license) FindByHardwareID(hardwareID string) (*model.License, error) {
-	return s.License.FindByHardwareID(hardwareID)
 }
 
 // Create new license.
@@ -79,7 +74,7 @@ func (s *license) Update(license *model.License) error {
 }
 
 // Delete license by id.
-func (s *license) Delete(id uint64) error {
+func (s *license) Delete(id string) error {
 	return s.License.Delete(id)
 }
 
