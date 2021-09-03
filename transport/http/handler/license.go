@@ -44,7 +44,7 @@ func (h *license) List(w http.ResponseWriter, _ *http.Request) error {
 		return response.ToJSON(w, http.StatusInternalServerError, nil)
 	}
 
-	return response.ToJSON(w, http.StatusOK, list)
+	return response.ToJSON(w, http.StatusOK, response.FromLicenses(list))
 }
 
 // Create register a new license.

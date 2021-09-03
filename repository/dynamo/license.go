@@ -25,7 +25,25 @@ func License(database *dynamodb.DynamoDB) *license {
 
 // FindAll returns a list of licenses.
 func (s *license) FindAll() ([]model.License, error) {
+	out, err := s.db.Scan(&dynamodb.ScanInput{
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	var licenses []model.License
+
+	for _, item := range out.Items {
+		var license model.License
+		err = dynamodbattribute.UnmarshalMap(item, &license)
+		if err != nil {
+			return nil, err
+		}
+
+		licenses = append(licenses, license)
+	}
+
 	return licenses, nil
 }
 
