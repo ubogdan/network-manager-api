@@ -2,6 +2,8 @@ resource "aws_api_gateway_rest_api" "gateway" {
   name        = "nm-api-${var.stack_env}"
   description = "Regional Rest API Gateway"
 
+  disable_execute_api_endpoint = true
+
   endpoint_configuration {
     types = ["REGIONAL"]
   }
