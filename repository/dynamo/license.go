@@ -1,6 +1,8 @@
 package dynamo
 
 import (
+	"strconv"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -12,7 +14,7 @@ type license struct {
 	db *dynamodb.DynamoDB
 }
 
-const tableName = "nm-licenses"
+const licenseTable = "nm-licenses"
 
 var _ repository.License = License(nil)
 
@@ -26,22 +28,21 @@ func License(database *dynamodb.DynamoDB) *license {
 // FindAll returns a list of licenses.
 func (s *license) FindAll() ([]model.License, error) {
 	out, err := s.db.Scan(&dynamodb.ScanInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(licenseTable),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	var licenses []model.License
-
-	for _, item := range out.Items {
+	licenses := make([]model.License, len(out.Items))
+	for idx, item := range out.Items {
 		var license model.License
 		err = dynamodbattribute.UnmarshalMap(item, &license)
 		if err != nil {
 			return nil, err
 		}
 
-		licenses = append(licenses, license)
+		licenses[idx] = license
 	}
 
 	return licenses, nil
@@ -50,7 +51,7 @@ func (s *license) FindAll() ([]model.License, error) {
 // Find returns a license by id (hradwareID).
 func (s *license) Find(hardwareID string) (*model.License, error) {
 	result, err := s.db.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(licenseTable),
 		Key: map[string]*dynamodb.AttributeValue{
 			"HardwareID": {
 				S: aws.String(hardwareID),
@@ -73,7 +74,6 @@ func (s *license) Find(hardwareID string) (*model.License, error) {
 
 // Create a new license record.
 func (s *license) Create(license *model.License) error {
-
 	av, err := dynamodbattribute.MarshalMap(license)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (s *license) Create(license *model.License) error {
 
 	input := &dynamodb.PutItemInput{
 		Item:      av,
-		TableName: aws.String(tableName),
+		TableName: aws.String(licenseTable),
 	}
 
 	_, err = s.db.PutItem(input)
@@ -97,17 +97,39 @@ func (s *license) Update(license *model.License) error {
 	_, err := s.db.UpdateItem(&dynamodb.UpdateItemInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":serial": {
-				S: aws.String("40DC4-739A8-87BF2-13698-3C60E-BLAH"),
+				S: aws.String(license.Serial),
+			},
+			":issued": {
+				N: aws.String(strconv.FormatInt(license.LastIssued, 10)),
+			},
+			":customer": {
+				M: map[string]*dynamodb.AttributeValue{
+					"Name": {
+						S: aws.String(license.Customer.Name),
+					},
+					"Country": {
+						S: aws.String(license.Customer.Country),
+					},
+					"City": {
+						S: aws.String(license.Customer.City),
+					},
+					"Organization": {
+						S: aws.String(license.Customer.Organization),
+					},
+					"OrganizationalUnit": {
+						S: aws.String(license.Customer.OrganizationalUnit),
+					},
+				},
 			},
 		},
-		TableName: aws.String(tableName),
+		TableName: aws.String(licenseTable),
 		Key: map[string]*dynamodb.AttributeValue{
 			"HardwareID": {
 				S: aws.String(license.HardwareID),
 			},
 		},
 		ReturnValues:     aws.String("UPDATED_NEW"),
-		UpdateExpression: aws.String("set Serial = :serial"),
+		UpdateExpression: aws.String("set Serial=:serial, LastIssued=:issued, Customer=:customer"),
 	})
 	if err != nil {
 		return err
@@ -124,7 +146,7 @@ func (s *license) Delete(hardwareID string) error {
 				S: aws.String(hardwareID),
 			},
 		},
-		TableName: aws.String(tableName),
+		TableName: aws.String(licenseTable),
 	})
 	if err != nil {
 		return err
