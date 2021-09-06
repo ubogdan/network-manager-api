@@ -17,7 +17,7 @@ trigger:
 steps:
   - name: Backend-Test
     pull: always
-    image: golang:1.15
+    image: golang:1.17
     commands:
       - make test
     volumes:

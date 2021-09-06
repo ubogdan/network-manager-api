@@ -102,6 +102,9 @@ func (s *license) Update(license *model.License) error {
 			":issued": {
 				N: aws.String(strconv.FormatInt(license.LastIssued, 10)),
 			},
+			":expire": {
+				N: aws.String(strconv.FormatInt(license.Expire, 10)),
+			},
 			":customer": {
 				M: map[string]*dynamodb.AttributeValue{
 					"Name": {
@@ -129,7 +132,7 @@ func (s *license) Update(license *model.License) error {
 			},
 		},
 		ReturnValues:     aws.String("UPDATED_NEW"),
-		UpdateExpression: aws.String("set Serial=:serial, LastIssued=:issued, Customer=:customer"),
+		UpdateExpression: aws.String("set Serial=:serial, LastIssued=:issued, Expire=:expire, Customer=:customer"),
 	})
 	if err != nil {
 		return err

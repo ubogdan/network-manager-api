@@ -5,7 +5,7 @@ MAINTAINER Bogdan Ungureanu <ubogdan@gmail.com>
 RUN apk update \
     && apk add --no-cache ca-certificates git make
 
-WORKDIR /lambda
+WORKDIR /app
 
 COPY . .
 
@@ -14,10 +14,13 @@ RUN CGO_ENABLED=0 go build -v -o ./build/service github.com/ubogdan/network-mana
 FROM alpine:3.13
 
 RUN apk update \
-    && apk add --no-cache ca-certificates
+    && apk add --no-cache ca-certificates tzdata \
+    && addgroup --gid 1000 service && adduser --disabled-password --gecos "" --ingroup service --no-create-home --uid 1000 service
 
 WORKDIR /app
 
-COPY --from=builder /lambda/build/service /app
+COPY --from=builder /app/build/service /app
+
+USER service
 
 CMD /app/service
