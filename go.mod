@@ -11,7 +11,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
-	github.com/traefik/yaegi v0.9.13
+	github.com/traefik/yaegi v0.9.23
 	github.com/ubogdan/license v0.1.3
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
