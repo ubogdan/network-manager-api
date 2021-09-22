@@ -1,2 +1,9 @@
 bin/*
 signing.key
+
+# Terraform sensitive
+**/*.terraform
+terraform.tfvars
+
+# Local env setup
+.env
