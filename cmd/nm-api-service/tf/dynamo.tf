@@ -12,3 +12,18 @@ resource "aws_dynamodb_table" "license-table" {
     APP = "network-manager"
   }
 }
+
+resource "aws_dynamodb_table" "release-table" {
+  name         = "nm-releases"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "Version"
+
+  attribute {
+    name = "Version"
+    type = "S"
+  }
+
+  tags = {
+    APP = "network-manager"
+  }
+}

@@ -38,6 +38,7 @@ data "aws_iam_policy_document" "dynamodb_table_access" {
 
     resources = [
       "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/nm-licenses",
+      "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/nm-releases",
     ]
   }
 }
