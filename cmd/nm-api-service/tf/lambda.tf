@@ -36,7 +36,7 @@ resource "aws_lambda_function" "lambda_handler" {
 resource "aws_cloudwatch_log_group" "log_group" {
   name = "/aws/lambda/${aws_lambda_function.lambda_handler.function_name}"
 
-  retention_in_days = 30
+  retention_in_days = 7
   tags = {
     Environment = var.stack_env
     Service = var.app_name
