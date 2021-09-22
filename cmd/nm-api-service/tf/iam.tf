@@ -20,6 +20,11 @@ resource "aws_iam_role_policy_attachment" "execution_role" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "tracing_role" {
+  role = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+
 data "aws_iam_policy_document" "dynamodb_table_access" {
   statement {
     actions = [
