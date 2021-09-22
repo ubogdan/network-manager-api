@@ -125,6 +125,18 @@ resource "aws_api_gateway_method" "lambda" {
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method_settings" "lambda" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  stage_name  = var.stack_env
+  method_path = "*/*"
+
+  settings {
+    # Set throttling values
+    throttling_burst_limit = 10
+    throttling_rate_limit  = 100
+  }
+}
+
 resource "aws_api_gateway_integration" "lambda" {
   rest_api_id = aws_api_gateway_rest_api.gateway.id
   resource_id = aws_api_gateway_method.lambda.resource_id
