@@ -28,6 +28,7 @@ import (
 func main() {
 	logSvc := logrus.New()
 
+	// Configure Xray
 	_ = xray.Configure(xray.Config{
 		DaemonAddr:     os.Getenv("AWS_XRAY_DAEMON_ADDRESS"),
 		ServiceVersion: model.Version().String(),
