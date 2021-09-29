@@ -1,5 +1,8 @@
 # Network Manager API
 
-[![Build Status](https://ci.lfpanels.com/api/badges/ubogdan/network-manager-api/status.svg)](https://ci.lfpanels.com/ubogdan/network-manager-api)
+[![Build Status](https://github.com/ubogdan/network-manager-api/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/features/actions)
 
-This is just a dummy readme.
+Features
+* [X] Manage Licenses
+* [X] Remote license renew
+* [] Releases
