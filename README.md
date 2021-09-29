@@ -5,4 +5,4 @@
 Features
 * [X] Manage Licenses
 * [X] Remote license renew
-* [] Releases
+* [ ] Releases
