@@ -6,7 +6,7 @@ on:
       - v*
 
 env:
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}           # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: "747256501865.dkr.ecr.eu-central-1.amazonaws.com"           # set this to your Amazon ECR repository name
 
 jobs:
   deploy:
