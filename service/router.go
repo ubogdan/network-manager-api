@@ -4,6 +4,7 @@ import (
 	"net/http"
 )
 
+// RouteHandler godoc
 type RouteHandler func(w http.ResponseWriter, r *http.Request) error
 
 // Router service definition.
