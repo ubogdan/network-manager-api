@@ -6,8 +6,11 @@ import (
 )
 
 const (
-	CorsAllowOriginHeader  = "Access-Control-Allow-Origin"
+	// CorsAllowOriginHeader godoc.
+	CorsAllowOriginHeader = "Access-Control-Allow-Origin"
+	// CorsAllowHeadersHeader godoc.
 	CorsAllowHeadersHeader = "Access-Control-Allow-Headers"
+	// CorsAllowMethodsHeader godoc.
 	CorsAllowMethodsHeader = "Access-Control-Allow-Methods"
 )
 

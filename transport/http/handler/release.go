@@ -14,6 +14,7 @@ type release struct {
 	log service.Logger
 }
 
+// NewRelease register the release handler to http router.
 func NewRelease(router service.Router, relSvc service.Release, logger service.Logger) {
 	handler := release{
 		rel: relSvc,
@@ -60,6 +61,7 @@ func (h *release) Create(w http.ResponseWriter, r *http.Request) error {
 	return response.ToJSON(w, http.StatusOK, response.FromRelease(&toModel))
 }
 
-func (h *release) Update(w http.ResponseWriter, r *http.Request) error {
+// Update release.
+func (h *release) Update(_ http.ResponseWriter, _ *http.Request) error {
 	return nil
 }

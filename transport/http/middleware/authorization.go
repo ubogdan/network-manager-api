@@ -8,7 +8,7 @@ import (
 	"github.com/ubogdan/network-manager-api/transport/http/response"
 )
 
-// Authorization middleware
+// Authorization middleware.
 func Authorization(authKey string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

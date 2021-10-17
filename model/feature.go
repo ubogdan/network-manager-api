@@ -11,12 +11,14 @@ type Feature struct {
 	Limit  int64
 }
 
+// FeatureType a license feature.
 type FeatureType string
 
 const (
 	FeatureTypeMaxNetworks = "MaxNetworks"
 )
 
+// Oid returns the feature oid.
 func (f FeatureType) Oid() asn1.ObjectIdentifier {
 	switch f {
 	case FeatureTypeMaxNetworks:
@@ -26,6 +28,7 @@ func (f FeatureType) Oid() asn1.ObjectIdentifier {
 	}
 }
 
+// Description returns a feature description.
 func (f FeatureType) Description() string {
 	switch f {
 	case FeatureTypeMaxNetworks:

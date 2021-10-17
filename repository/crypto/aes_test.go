@@ -15,6 +15,7 @@ func TestEncryptDecrypt(t *testing.T) {
 	// Generate random private key
 	privateKeyBytes := make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, privateKeyBytes)
+	assert.NoError(t, err)
 
 	samplePayload := []byte(`Super Secret Message`)
 	encryptedBytes, err := Encrypt(privateKeyBytes, samplePayload)

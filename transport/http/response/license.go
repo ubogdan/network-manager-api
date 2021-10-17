@@ -18,6 +18,7 @@ type License struct {
 	Features   []Feature `json:"features,omitempty"`
 }
 
+// Feature response DTO.
 type Feature struct {
 	Name   string `json:"name"`
 	Expire int64  `json:"expire"`
@@ -50,6 +51,7 @@ func FromLicense(lic *model.License) License {
 	}
 }
 
+// FromLicenses converts a model to DTO.
 func FromLicenses(licenses []model.License) []License {
 	response := make([]License, 0, len(licenses))
 	for _, lic := range licenses {

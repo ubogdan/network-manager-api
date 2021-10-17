@@ -6,16 +6,22 @@ import (
 )
 
 const (
-	ProductName        = "Network Manager Pro"
+	// ProductName contains the product name.
+	ProductName = "Network Manager Pro"
+	// DefaultGracePeriod godoc.
 	DefaultGracePeriod = 7 * 24 * time.Hour
-	DefaultValidity    = 30 * 24 * time.Hour
+	// DefaultValidity godoc.
+	DefaultValidity = 30 * 24 * time.Hour
 
-	ReadLimit1MB  = 1024 * 1024
-	ReadLimit10MB = 10 * ReadLimit1MB
+	// ReadLimit1MB used to prevent dos.
+	ReadLimit1MB = 1024 * 1024
 )
 
 var (
+	// ErrLicenseAlreadyExists godoc.
 	ErrLicenseAlreadyExists = errors.New("a license for this hardware id already exists")
-	ErrLicenseNotFound      = errors.New("license not found")
-	ErrLicenseExpired       = errors.New("license expired")
+	// ErrLicenseNotFound godoc.
+	ErrLicenseNotFound = errors.New("license not found")
+	// ErrLicenseExpired godoc.
+	ErrLicenseExpired = errors.New("license expired")
 )

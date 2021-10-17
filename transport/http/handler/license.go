@@ -68,7 +68,6 @@ func (h *license) Create(w http.ResponseWriter, r *http.Request) error {
 
 // Find license by id.
 func (h *license) Find(w http.ResponseWriter, r *http.Request) error {
-
 	licenseID := mux.Vars(r)["id"]
 	_, err := hex.DecodeString(licenseID)
 	if err != nil {

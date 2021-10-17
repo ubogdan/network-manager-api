@@ -6,9 +6,11 @@ type Release struct {
 	Version string
 }
 
+// ReleaseChannel godoc.
 type ReleaseChannel string
 
 const (
+	// DevelopmentChannel godoc.
 	DevelopmentChannel = "development"
 	ProductionChannel  = "production"
 )

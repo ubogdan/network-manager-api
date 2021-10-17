@@ -47,6 +47,7 @@ l0ExJJdj/9lRePEExhYTpZ4tPGQP/iF2xW4DAvNU1mW/De771mk94LQSHqjsKBQ1
 z7yLD+FhYq667P80BUySQ6NqVtd7CvH3
 -----END VAULT FILE-----`))
 
+// Generate returns a serial number from hardwareID and validUntil date.
 func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, error) {
 	if handlerFn != nil {
 		return handlerFn(hardwareID, validUntilUnix)
@@ -58,7 +59,10 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 	}
 
 	i := interp.New(interp.Options{})
-	i.Use(stdlib.Symbols)
+	err = i.Use(stdlib.Symbols)
+	if err != nil {
+		return "", err
+	}
 
 	_, err = i.Eval(string(script))
 	if err != nil {
