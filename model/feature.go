@@ -15,6 +15,7 @@ type Feature struct {
 type FeatureType string
 
 const (
+	// FeatureTypeMaxNetworks godoc.
 	FeatureTypeMaxNetworks = "MaxNetworks"
 )
 
