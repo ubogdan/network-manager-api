@@ -35,9 +35,9 @@ func main() {
 	})
 
 	// Trace init start-up time
-	_, startSeg := xray.BeginSegment(context.Background(), "start-up")
+	_, init := xray.BeginSegment(context.Background(), "start-up")
 	r, err := setup(logSvc)
-	startSeg.Close(err)
+	init.Close(err)
 
 	// Log to stderr if something goes wrong during initialization
 	if err != nil {

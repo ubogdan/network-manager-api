@@ -6,20 +6,36 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
+	"github.com/ubogdan/network-manager-api/model"
 	"github.com/ubogdan/network-manager-api/service"
+
 	"github.com/ubogdan/network-manager-api/transport/http/request"
 	"github.com/ubogdan/network-manager-api/transport/http/response"
 )
 
+// License service definition.
+type License interface {
+	FindAll() ([]model.License, error)
+	Find(id string) (*model.License, error)
+	Create(license *model.License) error
+	Update(license *model.License) error
+	Delete(id string) error
+	Renew(license *model.License) ([]byte, error)
+}
+
+// Logger service definition.
+type Logger interface {
+	Errorf(string, ...interface{})
+}
+
 type license struct {
 	secretKey []byte
-	license   service.License
-	log       service.Logger
+	license   License
+	log       Logger
 }
 
 // NewLicense register http endpoints for license.
-func NewLicense(router service.Router, licSvc service.License, secretKey []byte, logger service.Logger) {
+func NewLicense(router service.Router, licSvc License, secretKey []byte, logger Logger) {
 	handler := license{
 		license:   licSvc,
 		log:       logger,

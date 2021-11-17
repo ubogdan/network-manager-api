@@ -11,7 +11,6 @@ import (
 	"github.com/ubogdan/network-manager-api/model"
 	"github.com/ubogdan/network-manager-api/repository"
 	"github.com/ubogdan/network-manager-api/repository/serial"
-	"github.com/ubogdan/network-manager-api/service"
 )
 
 type license struct {
@@ -19,8 +18,6 @@ type license struct {
 	LicenseSigner   crypto.Signer
 	SerialNumberKey []byte
 }
-
-var _ service.License = New(nil, nil, nil)
 
 // New returns license service implementation.
 func New(lic repository.License, privateKey []byte, signer crypto.Signer) *license {
