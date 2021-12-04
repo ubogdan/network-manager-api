@@ -8,8 +8,13 @@ test:
 fmt:
 	go fmt ./...
 
+client=747256501865
+region=eu-central-1
 version=latest
 
+login:
+	aws ecr get-login-password --region $(region) | docker login --username AWS --password-stdin $(client).dkr.ecr.$(region).amazonaws.com
+
 %-service:
-	docker build -t 747256501865.dkr.ecr.eu-central-1.amazonaws.com/$@:$(version) -f cmd/$@/Dockerfile .
-	docker push 747256501865.dkr.ecr.eu-central-1.amazonaws.com/$@:$(version)
+	docker build -t $(client).dkr.ecr.$(region).amazonaws.com/$@:$(version) -f cmd/$@/Dockerfile .
+	docker push $(client).dkr.ecr.$(region).amazonaws.com/$@:$(version)
