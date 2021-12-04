@@ -1,6 +1,6 @@
 module github.com/ubogdan/network-manager-api
 
-go 1.15
+go 1.16
 
 require (
 	github.com/aws/aws-lambda-go v1.26.0
@@ -14,5 +14,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/traefik/yaegi v0.9.23
 	github.com/ubogdan/license v0.1.3
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
