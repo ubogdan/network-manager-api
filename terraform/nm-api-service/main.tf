@@ -243,9 +243,11 @@ resource "aws_api_gateway_base_path_mapping" "v1" {
 }
 
 resource "aws_dynamodb_table" "license-table" {
-  name         = "nm-licenses"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "HardwareID"
+  name           = "nm-licenses"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "HardwareID"
 
   attribute {
     name = "HardwareID"
