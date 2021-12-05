@@ -3,8 +3,12 @@ name: Build
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'terraform/**'
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - 'terraform/**'
 
 jobs:
   test:
