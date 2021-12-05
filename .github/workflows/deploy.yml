@@ -3,6 +3,7 @@ name: Deploy
 on:
   push:
     tags:
+      - '*.*.*'
 
 env:
   ECR_REPOSITORY: "nm-api-service"           # set this to your Amazon ECR repository name
