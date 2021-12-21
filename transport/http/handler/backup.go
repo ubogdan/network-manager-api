@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -45,6 +46,14 @@ func (h *backup) Create(w http.ResponseWriter, req *http.Request) error {
 	err := request.FromJSON(req.Body, &reqData)
 	if err != nil {
 		return response.ToJSON(w, http.StatusBadRequest, err)
+	}
+
+	if len(reqData.LicenseID) == 0 {
+		return response.ToJSON(w, http.StatusNotFound, errors.New("license id is required"))
+	}
+
+	if len(reqData.FileName) == 0 {
+		return response.ToJSON(w, http.StatusNotFound, errors.New("file name is required"))
 	}
 
 	lic, err := h.License.FindBySerial(reqData.LicenseID)
