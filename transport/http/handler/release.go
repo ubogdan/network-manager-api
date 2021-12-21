@@ -22,8 +22,8 @@ func NewRelease(router service.Router, relSvc service.Release, logger service.Lo
 	}
 
 	// Release MGMT
-	router.Post("/release", handler.Create)
-	router.Put("/release", handler.Update)
+	router.Post("/admin/release", handler.Create)
+	router.Put("/admin/release", handler.Update)
 
 	// Client release channels
 	router.Get("/release/latest", handler.List(model.DevelopmentChannel))

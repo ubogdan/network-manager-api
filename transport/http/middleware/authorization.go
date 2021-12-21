@@ -12,7 +12,7 @@ import (
 func Authorization(authKey string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !strings.HasPrefix(r.URL.Path, "/v1/renew/") {
+			if strings.HasPrefix(r.URL.Path, "/v1/admin/") {
 				authError := func(authValue string) error {
 					authorization := strings.TrimSpace(r.Header.Get("Authorization"))
 
@@ -38,7 +38,7 @@ func Authorization(authKey string) func(next http.Handler) http.Handler {
 				}(authKey)
 
 				if authError != nil {
-					response.ToJSON(w, http.StatusUnauthorized, authError.Error())
+					_ = response.ToJSON(w, http.StatusUnauthorized, authError.Error())
 
 					return
 				}

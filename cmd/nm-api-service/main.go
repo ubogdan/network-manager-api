@@ -19,6 +19,7 @@ import (
 	"github.com/ubogdan/network-manager-api/repository/crypto"
 	"github.com/ubogdan/network-manager-api/repository/dynamo"
 	"github.com/ubogdan/network-manager-api/service"
+	"github.com/ubogdan/network-manager-api/service/backup"
 	"github.com/ubogdan/network-manager-api/service/license"
 	"github.com/ubogdan/network-manager-api/service/router"
 	"github.com/ubogdan/network-manager-api/transport/http/handler"
@@ -102,12 +103,12 @@ func setup(logger service.Logger) (*mux.Router, error) {
 	}
 
 	db := dynamodb.New(sess)
-
+	bucketName := os.Getenv("BACKUP_BUCKET")
 	licSvc := license.New(dynamo.License(db), authorizedKeyBytes, licenseSigner)
-	//relSvc := release.New(bolt.Release())
 
 	muxRouter := router.NewMuxRouter(api, logger)
 	handler.NewLicense(muxRouter, licSvc, authorizedKeyBytes, logger)
+	handler.NewBackup(muxRouter, backup.New(bucketName), licSvc, logger)
 	//handler.NewRelease(muxRouter, relSvc, logger)
 	handler.NewVersion(muxRouter)
 

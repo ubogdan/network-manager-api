@@ -217,6 +217,7 @@ resource "aws_lambda_function" "lambda_handler" {
       API_BEARER_AUTH = var.bearer_auth
       API_BASE_PATH = var.base_path
       LICENSE_KEY = var.license_key
+      BACKUP_BUCKET = var.backup_bucket
     }
   }
 

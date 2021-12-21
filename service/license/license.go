@@ -9,18 +9,27 @@ import (
 	lic "github.com/ubogdan/license"
 
 	"github.com/ubogdan/network-manager-api/model"
-	"github.com/ubogdan/network-manager-api/repository"
 	"github.com/ubogdan/network-manager-api/repository/serial"
 )
 
+// License service definition.
+type License interface {
+	FindAll() ([]model.License, error)
+	Find(id string) (*model.License, error)
+	FindBySerial(serial string) (*model.License, error)
+	Create(license *model.License) error
+	Update(license *model.License) error
+	Delete(id string) error
+}
+
 type license struct {
-	License         repository.License
+	License         License
 	LicenseSigner   crypto.Signer
 	SerialNumberKey []byte
 }
 
 // New returns license service implementation.
-func New(lic repository.License, privateKey []byte, signer crypto.Signer) *license {
+func New(lic License, privateKey []byte, signer crypto.Signer) *license {
 	return &license{
 		License:         lic,
 		LicenseSigner:   signer,
@@ -36,6 +45,11 @@ func (s *license) FindAll() ([]model.License, error) {
 // Find return license by id.
 func (s *license) Find(id string) (*model.License, error) {
 	return s.License.Find(id)
+}
+
+// FindBySerial return license by serial.
+func (s *license) FindBySerial(serial string) (*model.License, error) {
+	return s.License.FindBySerial(serial)
 }
 
 // Create new license.

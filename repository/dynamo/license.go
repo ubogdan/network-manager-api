@@ -1,13 +1,14 @@
 package dynamo
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	expr "github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/ubogdan/network-manager-api/model"
-	"github.com/ubogdan/network-manager-api/repository"
 )
 
 type license struct {
@@ -15,8 +16,6 @@ type license struct {
 }
 
 const licenseTable = "nm-licenses"
-
-var _ repository.License = License(nil)
 
 // License return a license repository.
 func License(database *dynamodb.DynamoDB) *license {
@@ -70,6 +69,46 @@ func (s *license) Find(hardwareID string) (*model.License, error) {
 	}
 
 	return &item, nil
+}
+
+// FindBySerial returns a license by serial.
+func (s *license) FindBySerial(serial string) (*model.License, error) {
+	e, err := expr.NewBuilder().
+		WithFilter(expr.Name("Serial").Equal(expr.Value(serial))).
+		WithProjection(expr.NamesList(expr.Name("HardwareID"), expr.Name("Serial"), expr.Name("Features"))).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  e.Names(),
+		ExpressionAttributeValues: e.Values(),
+		FilterExpression:          e.Filter(),
+		ProjectionExpression:      e.Projection(),
+		TableName:                 aws.String(licenseTable),
+	}
+
+	// Make the DynamoDB Query API call
+	result, err := s.db.Scan(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(result.Items) != 1 {
+		return nil, errors.New("no license found")
+	}
+
+	var item model.License
+
+	err = dynamodbattribute.UnmarshalMap(result.Items[0], &item)
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
+
 }
 
 // Create a new license record.

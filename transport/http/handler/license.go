@@ -17,6 +17,7 @@ import (
 type License interface {
 	FindAll() ([]model.License, error)
 	Find(id string) (*model.License, error)
+	FindBySerial(serial string) (*model.License, error)
 	Create(license *model.License) error
 	Update(license *model.License) error
 	Delete(id string) error
@@ -43,11 +44,11 @@ func NewLicense(router service.Router, licSvc License, secretKey []byte, logger 
 	}
 
 	// Renew MGMT
-	router.Get("/licenses", handler.List)
-	router.Get("/licenses/{id}", handler.Find)
-	router.Post("/licenses", handler.Create)
-	router.Put("/licenses/{id}", handler.Update)
-	router.Delete("/licenses/{id}", handler.Delete)
+	router.Get("/admin/licenses", handler.List)
+	router.Get("/admin/licenses/{id}", handler.Find)
+	router.Post("/admin/licenses", handler.Create)
+	router.Put("/admin/licenses/{id}", handler.Update)
+	router.Delete("/admin/licenses/{id}", handler.Delete)
 
 	// Client Handler
 	router.Put("/renew/{serial}", handler.Renew)
@@ -72,14 +73,14 @@ func (h *license) Create(w http.ResponseWriter, r *http.Request) error {
 		return response.ToJSON(w, http.StatusBadRequest, err)
 	}
 
-	model := lic.ToModel()
+	license := lic.ToModel()
 
-	err = h.license.Create(&model)
+	err = h.license.Create(&license)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
 
-	return response.ToJSON(w, http.StatusOK, response.FromLicense(&model))
+	return response.ToJSON(w, http.StatusOK, response.FromLicense(&license))
 }
 
 // Find license by id.
@@ -114,14 +115,14 @@ func (h *license) Update(w http.ResponseWriter, r *http.Request) error {
 		return response.ToJSON(w, http.StatusBadRequest, err)
 	}
 
-	model := lic.ToModel()
+	license := lic.ToModel()
 
-	err = h.license.Update(&model)
+	err = h.license.Update(&license)
 	if err != nil {
 		return response.ToJSON(w, http.StatusInternalServerError, err)
 	}
 
-	return response.ToJSON(w, http.StatusOK, response.FromLicense(&model))
+	return response.ToJSON(w, http.StatusOK, response.FromLicense(&license))
 }
 
 // Delete license.

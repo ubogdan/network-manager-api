@@ -10,7 +10,7 @@ variable "app_name" {
 
 variable "app_version" {
   type        = string
-  default     = "0.1.2"
+  default     = "1.0.4"
   description = "Container image version used to deploy the lambda function"
 }
 
@@ -88,6 +88,11 @@ variable "allow_credentials" {
 variable "base_path" {
   type = string
   default = "v1"
+}
+
+variable "backup_bucket" {
+  type = string
+  default = "nm-backup"
 }
 
 variable "license_key" {
