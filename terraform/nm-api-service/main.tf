@@ -332,6 +332,30 @@ resource "aws_iam_role_policy_attachment" "dynamodb_table_access" {
   policy_arn = aws_iam_policy.dynamodb_table_access.arn
 }
 
+data "aws_iam_policy_document" "backup_access" {
+  statement {
+    actions = [
+      "s3:PutObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.backup_bucket}",
+      "arn:aws:s3:::${var.backup_bucket}/*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "backup_access" {
+  name        = "AWSLambdaBackupAccess-${var.app_name}-${var.stack_env}"
+  description = "Allows access to the backup bucket"
+  policy      = data.aws_iam_policy_document.backup_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "backup_access" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = aws_iam_policy.backup_access.arn
+}
+
 data "aws_iam_policy_document" "ses_access" {
   statement {
     actions = [
