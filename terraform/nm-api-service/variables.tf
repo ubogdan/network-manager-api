@@ -1,5 +1,5 @@
 variable "stack_env" {
-  type    = string
+  type = string
 }
 
 variable "app_name" {
@@ -27,9 +27,9 @@ variable "timeout" {
 }
 
 variable "reserved_concurrency" {
-  type = number
+  type        = number
   description = "Reserved concurrency guarantees the maximum number of concurrent instances for the function. A value of 0 disables lambda from being triggered and -1 removes any concurrency limitations. "
-  default = -1
+  default     = -1
 }
 
 variable "allow_headers" {
@@ -72,7 +72,7 @@ variable "domain_name" {
 variable "allow_origin" {
   description = "Allow origin"
   type        = string
-  default = "*"
+  default     = "*"
 }
 
 variable "allow_max_age" {
@@ -86,12 +86,12 @@ variable "allow_credentials" {
   default     = true
 }
 variable "base_path" {
-  type = string
+  type    = string
   default = "v1"
 }
 
 variable "backup_bucket" {
-  type = string
+  type    = string
   default = "nm-backup"
 }
 

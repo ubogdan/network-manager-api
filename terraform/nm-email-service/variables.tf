@@ -1,10 +1,10 @@
 variable "stack_region" {
-  type = string
+  type        = string
   description = "The region where the application will be deployed"
 }
 
 variable "stack_env" {
-  type    = string
+  type        = string
   description = "The environment where the application will be deployed"
 }
 
@@ -33,7 +33,7 @@ variable "timeout" {
 }
 
 variable "reserved_concurrency" {
-  type = number
+  type        = number
   description = "Reserved concurrency guarantees the maximum number of concurrent instances for the function. A value of 0 disables lambda from being triggered and -1 removes any concurrency limitations. "
-  default = -1
+  default     = -1
 }

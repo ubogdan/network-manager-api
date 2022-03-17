@@ -7,7 +7,7 @@ terraform {
 
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
       version = "~> 3.0"
     }
   }
@@ -15,15 +15,16 @@ terraform {
   backend "s3" {
     encrypt = true
     region  = "eu-central-1"
+    key     = "${var.app_name}-${var.stack_env}"
   }
 }
 
 locals {
   headers = {
-    "Access-Control-Allow-Headers" = "'${join(",", var.allow_headers)}'"
-    "Access-Control-Allow-Methods" = "'${join(",", var.allow_methods)}'"
-    "Access-Control-Allow-Origin" = "'${var.allow_origin}'"
-    "Access-Control-Max-Age" = "'${var.allow_max_age}'"
+    "Access-Control-Allow-Headers"     = "'${join(",", var.allow_headers)}'"
+    "Access-Control-Allow-Methods"     = "'${join(",", var.allow_methods)}'"
+    "Access-Control-Allow-Origin"      = "'${var.allow_origin}'"
+    "Access-Control-Max-Age"           = "'${var.allow_max_age}'"
     "Access-Control-Allow-Credentials" = var.allow_credentials ? "'true'" : ""
   }
 
@@ -66,6 +67,18 @@ resource "aws_api_gateway_deployment" "deployment" {
 
   rest_api_id = aws_api_gateway_rest_api.gateway.id
   stage_name  = var.stack_env
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.proxy.id,
+      aws_api_gateway_method.lambda.id,
+      aws_api_gateway_integration.lambda.id,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_resource" "proxy" {
@@ -81,14 +94,14 @@ resource "aws_api_gateway_method" "mock" {
   rest_api_id   = aws_api_gateway_rest_api.gateway.id
 
   request_parameters = {
-    "method.request.querystring.authuser"         = false
-    "method.request.querystring.code"             = false
-    "method.request.querystring.page"             = false
-    "method.request.querystring.perPage"          = false
-    "method.request.querystring.prompt"           = false
-    "method.request.querystring.scope"            = false
-    "method.request.querystring.sortBy"           = false
-    "method.request.querystring.state"            = false
+    "method.request.querystring.authuser" = false
+    "method.request.querystring.code"     = false
+    "method.request.querystring.page"     = false
+    "method.request.querystring.perPage"  = false
+    "method.request.querystring.prompt"   = false
+    "method.request.querystring.scope"    = false
+    "method.request.querystring.sortBy"   = false
+    "method.request.querystring.state"    = false
   }
 }
 
@@ -195,12 +208,12 @@ data "aws_region" "current" {}
 
 resource "aws_lambda_function" "lambda_handler" {
 
-  function_name                  = "${var.app_name}-${var.stack_env}"
-  description                    = "Lambda handler for ${aws_api_gateway_rest_api.gateway.name}"
+  function_name = "${var.app_name}-${var.stack_env}"
+  description   = "Lambda handler for ${aws_api_gateway_rest_api.gateway.name}"
 
   publish                        = true
   package_type                   = "Image"
-  image_uri = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${var.app_name}:${var.app_version}"
+  image_uri                      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${var.app_name}:${var.app_version}"
   role                           = aws_iam_role.lambda.arn
   memory_size                    = var.memory
   timeout                        = var.timeout
@@ -213,16 +226,16 @@ resource "aws_lambda_function" "lambda_handler" {
   environment {
     variables = {
       S3_BUCKET_REGION = "eu-central-1"
-      AUTHORIZED_KEY = var.authorized_key
-      API_BEARER_AUTH = var.bearer_auth
-      API_BASE_PATH = var.base_path
-      LICENSE_KEY = var.license_key
-      BACKUP_BUCKET = var.backup_bucket
+      AUTHORIZED_KEY   = var.authorized_key
+      API_BEARER_AUTH  = var.bearer_auth
+      API_BASE_PATH    = var.base_path
+      LICENSE_KEY      = var.license_key
+      BACKUP_BUCKET    = var.backup_bucket
     }
   }
 
   tags = {
-    Name           = "${var.app_name}-${var.stack_env}"
+    Name = "${var.app_name}-${var.stack_env}"
   }
 }
 
@@ -232,7 +245,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
   retention_in_days = 7
   tags = {
     Environment = var.stack_env
-    Service = var.app_name
+    Service     = var.app_name
   }
 }
 
@@ -298,12 +311,12 @@ resource "aws_iam_role" "lambda" {
 
 
 resource "aws_iam_role_policy_attachment" "execution_role" {
-  role  = aws_iam_role.lambda.name
+  role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "tracing_role" {
-  role = aws_iam_role.lambda.name
+  role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 

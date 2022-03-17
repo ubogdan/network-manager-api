@@ -7,7 +7,7 @@ terraform {
 
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
       version = "~> 3.0"
     }
   }
@@ -22,8 +22,8 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_lambda_function" "lambda_handler" {
 
-  function_name                  = "${var.app_name}-${var.stack_env}"
-  description                    = "Lambda function for ${var.app_name}-${var.stack_env}"
+  function_name = "${var.app_name}-${var.stack_env}"
+  description   = "Lambda function for ${var.app_name}-${var.stack_env}"
 
   publish                        = true
   package_type                   = "Image"
@@ -39,12 +39,12 @@ resource "aws_lambda_function" "lambda_handler" {
 
   environment {
     variables = {
-      S3_BUCKET_REGION = "eu-central-1" }
+    S3_BUCKET_REGION = "eu-central-1" }
   }
 
   tags = {
-    Name           = "${var.app_name}-${var.stack_env}"
-    Environment    = var.stack_env
+    Name        = "${var.app_name}-${var.stack_env}"
+    Environment = var.stack_env
   }
 }
 
@@ -54,12 +54,12 @@ resource "aws_cloudwatch_log_group" "log_group" {
   retention_in_days = 7
   tags = {
     Environment = var.stack_env
-    Service = var.app_name
+    Service     = var.app_name
   }
 }
 
 resource "aws_iam_role_policy_attachment" "execution_role" {
-  role  = aws_iam_role.lambda.name
+  role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -69,7 +69,7 @@ resource "aws_sns_topic" "sns_topic" {
   kms_master_key_id = "alias/aws/sns"
 
   tags = {
-    Service = var.app_name
+    Service     = var.app_name
     Environment = var.stack_env
   }
 }
@@ -82,7 +82,7 @@ resource "aws_sqs_queue" "sns_topic" {
   kms_master_key_id = "alias/aws/sqs"
 
   tags = {
-    Service = var.app_name
+    Service     = var.app_name
     Environment = var.stack_env
   }
 }
@@ -103,7 +103,7 @@ data "aws_iam_policy_document" "sns_topic_drl" {
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
-      values   = [
+      values = [
         aws_sns_topic.sns_topic.arn,
       ]
     }
@@ -116,10 +116,10 @@ resource "aws_sqs_queue_policy" "sns_publish_policy" {
 }
 
 resource "aws_sns_topic_subscription" "topic_subscription" {
-  topic_arn = aws_sns_topic.sns_topic.arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.lambda_handler.arn
-  redrive_policy = jsonencode({"deadLetterTargetArn"=aws_sqs_queue.sns_topic.arn})
+  topic_arn      = aws_sns_topic.sns_topic.arn
+  protocol       = "lambda"
+  endpoint       = aws_lambda_function.lambda_handler.arn
+  redrive_policy = jsonencode({ "deadLetterTargetArn" = aws_sqs_queue.sns_topic.arn })
 }
 
 data "aws_iam_policy_document" "lambda" {
@@ -161,7 +161,7 @@ resource "aws_iam_role_policy_attachment" "ses_access" {
 }
 
 resource "aws_lambda_permission" "sns_execute" {
-  statement_id = "AllowExecutionFromSNS"
+  statement_id  = "AllowExecutionFromSNS"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_handler.function_name
   principal     = "sns.amazonaws.com"
