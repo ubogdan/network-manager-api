@@ -1,5 +1,5 @@
 variable "stack_env" {
-  type    = string
+  type        = string
   description = ""
 }
 
@@ -10,11 +10,11 @@ variable "app_name" {
 }
 
 variable "region" {
-  type = string
+  type        = string
   description = ""
 }
 
 variable "pgp_key" {
-  type = string
+  type        = string
   description = ""
 }

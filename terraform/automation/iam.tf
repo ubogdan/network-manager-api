@@ -3,17 +3,21 @@ resource "aws_iam_user" "actions" {
 }
 
 resource "aws_iam_access_key" "actions" {
-  user = aws_iam_user.actions.name
+  user    = aws_iam_user.actions.name
   pgp_key = var.pgp_key
 }
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-resource "aws_iam_user_policy" "actions_authorization" {
-  name = "ecr-authorization-${var.app_name}-${var.stack_env}"
-  user = aws_iam_user.actions.name
-  policy = <<EOF
+resource "aws_iam_group" "group" {
+  name = "automation-group"
+}
+
+resource "aws_iam_policy" "ecr-authorization" {
+  name        = "ecr-authorization-${var.app_name}-${var.stack_env}"
+  description = "A test policy"
+  policy      = <<EOF
 {
    "Version":"2012-10-17",
    "Statement":[
@@ -30,10 +34,13 @@ resource "aws_iam_user_policy" "actions_authorization" {
 EOF
 }
 
-resource "aws_iam_user_policy" "actions-push" {
-  name = "ecr-push-${var.app_name}-${var.stack_env}"
-  user = aws_iam_user.actions.name
+resource "aws_iam_group_policy_attachment" "test-attach" {
+  group      = aws_iam_group.group.name
+  policy_arn = aws_iam_policy.ecr-authorization.arn
+}
 
+resource "aws_iam_policy" "ecr-push" {
+  name   = "ecr-push-${var.app_name}-${var.stack_env}"
   policy = <<EOF
 {
    "Version":"2012-10-17",
@@ -57,10 +64,13 @@ resource "aws_iam_user_policy" "actions-push" {
 EOF
 }
 
-resource "aws_iam_user_policy" "actions-lambda" {
-  name = "lambda-update-${var.app_name}-${var.stack_env}"
-  user = aws_iam_user.actions.name
+resource "aws_iam_group_policy_attachment" "ecr-push" {
+  group      = aws_iam_group.group.name
+  policy_arn = aws_iam_policy.ecr-push.arn
+}
 
+resource "aws_iam_policy" "lambda-update" {
+  name   = "lambda-update-${var.app_name}-${var.stack_env}"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -79,12 +89,26 @@ resource "aws_iam_user_policy" "actions-lambda" {
 EOF
 }
 
+resource "aws_iam_group_policy_attachment" "lambda-update" {
+  group      = aws_iam_group.group.name
+  policy_arn = aws_iam_policy.lambda-update.arn
+}
+
+resource "aws_iam_group_membership" "team" {
+  name = "automation-group-membership"
+
+  users = [
+    aws_iam_user.actions.name,
+  ]
+
+  group = aws_iam_group.group.name
+}
 
 output "aws_iam_api" {
   value = aws_iam_access_key.actions.id
 }
 
 output "aws_iam_secret" {
-  value = aws_iam_access_key.actions.encrypted_secret
+  value     = aws_iam_access_key.actions.encrypted_secret
   sensitive = false
 }
