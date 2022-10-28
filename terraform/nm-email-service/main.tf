@@ -39,7 +39,9 @@ resource "aws_lambda_function" "lambda_handler" {
 
   environment {
     variables = {
-    S3_BUCKET_REGION = "eu-central-1" }
+      DEFAULT_EMAIL_FROM = var.default_email_from
+      S3_BUCKET_REGION   = "eu-central-1"
+    }
   }
 
   tags = {

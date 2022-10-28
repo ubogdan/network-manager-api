@@ -37,3 +37,9 @@ variable "reserved_concurrency" {
   description = "Reserved concurrency guarantees the maximum number of concurrent instances for the function. A value of 0 disables lambda from being triggered and -1 removes any concurrency limitations. "
   default     = -1
 }
+
+variable "default_email_from" {
+  type        = string
+  description = "Default email from address"
+  default     = "no-reply@lfpanels.com"
+}

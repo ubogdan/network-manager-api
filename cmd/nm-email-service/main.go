@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -40,47 +41,49 @@ type SNSMessageAttribute struct {
 }
 
 func main() {
-	defaultFrom, defaultTemplate := "no-reply@lfpanels.com", "default.html"
+	defaultFrom := os.Getenv("DEFAULT_EMAIL_FROM")
 
 	lambda.Start(func(ctx context.Context, snsEvent SNSEvent) {
 		for _, record := range snsEvent.Records {
 			log.Printf("Got attributes %#v", record.SNS.MessageAttributes)
 
-			var from = defaultFrom
-			fromAttr, ok := record.SNS.MessageAttributes["From"]
-			if ok {
-				from = fromAttr.Value
+			var from, to, subject, template string
+
+			attributes := make(map[string]string)
+
+			for name, attr := range record.SNS.MessageAttributes {
+				switch name {
+				case "From":
+					from = attr.Value
+				case "To":
+					to = attr.Value
+				case "Template":
+					template = attr.Value
+				case "Subject":
+					subject = attr.Value
+					fallthrough
+				default:
+					attributes[name] = attr.Value
+				}
 			}
 
-			var to string
-			toAttr, ok := record.SNS.MessageAttributes["To"]
-			if ok {
-				to = toAttr.Value
+			if len(from) == 0 {
+				from = defaultFrom
 			}
 
 			if len(to) == 0 {
-				log.Printf("missing To attribute for SNS message %#v", record.SNS)
+				log.Printf("missing To attribute for SNS message %#v", record.SNS.MessageID)
+
 				continue
 			}
 
-			var subject string
-			subjectAttr, ok := record.SNS.MessageAttributes["Subject"]
-			if ok {
-				subject = subjectAttr.Value
+			if len(template) == 0 {
+				log.Printf("missing Template attribute for SNS message %#v", record.SNS.MessageID)
+
+				continue
 			}
 
-			var template = defaultTemplate
-			templateAttr, ok := record.SNS.MessageAttributes["Template"]
-			if ok {
-				template = templateAttr.Value
-			}
-
-			log.Printf("Layout %s", template)
-
-			err := email.Send(from, to, subject, template, map[string]interface{}{
-				"Title":   "Test email",
-				"Message": "message",
-			})
+			err := email.Send(from, to, subject, template, attributes)
 			if err != nil {
 				log.Println("send email error:", err)
 			}
