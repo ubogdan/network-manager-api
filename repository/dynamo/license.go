@@ -183,13 +183,10 @@ func (s *license) Update(license *model.License) error {
 				"Name": {
 					S: aws.String(string(feature.Name)),
 				},
+				"Limit": {
+					N: aws.String(strconv.FormatInt(feature.Limit, 10)),
+				},
 			},
-		}
-
-		if feature.Limit > 0 {
-			featureObject.M["Limit"] = &dynamodb.AttributeValue{
-				N: aws.String(strconv.FormatInt(feature.Limit, 10)),
-			}
 		}
 
 		if feature.Expire > 0 {
