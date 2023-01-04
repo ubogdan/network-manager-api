@@ -133,7 +133,7 @@ func (s *license) Create(license *model.License) error {
 
 // Update a license record.
 func (s *license) Update(license *model.License) error {
-	_, err := s.db.UpdateItem(&dynamodb.UpdateItemInput{
+	update := dynamodb.UpdateItemInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":serial": {
 				S: aws.String(license.Serial),
@@ -163,6 +163,9 @@ func (s *license) Update(license *model.License) error {
 					},
 				},
 			},
+			":features": {
+				L: []*dynamodb.AttributeValue{},
+			},
 		},
 		TableName: aws.String(licenseTable),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -171,8 +174,34 @@ func (s *license) Update(license *model.License) error {
 			},
 		},
 		ReturnValues:     aws.String("UPDATED_NEW"),
-		UpdateExpression: aws.String("set Serial=:serial, LastIssued=:issued, Expire=:expire, Customer=:customer"),
-	})
+		UpdateExpression: aws.String("set Serial=:serial, Features=:features,LastIssued=:issued, Expire=:expire, Customer=:customer"),
+	}
+
+	for _, feature := range license.Features {
+		featureObject := dynamodb.AttributeValue{
+			M: map[string]*dynamodb.AttributeValue{
+				"Name": {
+					S: aws.String(string(feature.Name)),
+				},
+			},
+		}
+
+		if feature.Limit > 0 {
+			featureObject.M["Limit"] = &dynamodb.AttributeValue{
+				N: aws.String(strconv.FormatInt(feature.Limit, 10)),
+			}
+		}
+
+		if feature.Expire > 0 {
+			featureObject.M["Expire"] = &dynamodb.AttributeValue{
+				N: aws.String(strconv.FormatInt(feature.Expire, 10)),
+			}
+		}
+
+		update.ExpressionAttributeValues[":features"].L = append(update.ExpressionAttributeValues[":features"].L, &featureObject)
+	}
+
+	_, err := s.db.UpdateItem(&update)
 	if err != nil {
 		return err
 	}

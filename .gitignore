@@ -7,3 +7,7 @@ terraform.tfvars
 
 # Local env setup
 .env
+
+# JetBrains IDEs
+.idea
+

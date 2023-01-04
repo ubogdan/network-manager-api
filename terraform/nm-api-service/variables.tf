@@ -10,7 +10,7 @@ variable "app_name" {
 
 variable "app_version" {
   type        = string
-  default     = "1.0.5"
+  default     = "v0.1.4"
   description = "Container image version used to deploy the lambda function"
 }
 
