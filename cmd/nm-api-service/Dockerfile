@@ -9,9 +9,13 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -v --ldflags '-s -w' -o ./build/service github.com/ubogdan/network-manager-api/cmd/nm-api-service
+ARG GOARCH=
 
-FROM alpine:3.16
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build -v --ldflags '-s -w' -o ./build/service github.com/ubogdan/network-manager-api/cmd/nm-api-service
+
+ARG ARCH=
+
+FROM ${ARCH}alpine:3.16
 
 RUN apk update \
     && apk add --no-cache ca-certificates tzdata \
