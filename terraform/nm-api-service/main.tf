@@ -72,13 +72,27 @@ resource "aws_api_gateway_deployment" "deployment" {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.proxy.id,
       aws_api_gateway_method.lambda.id,
+      aws_api_gateway_method.admin_lambda.id,
       aws_api_gateway_integration.lambda.id,
+      aws_api_gateway_integration.admin_lambda.id,
     ]))
   }
 
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_api_gateway_resource" "admin" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_rest_api.gateway.root_resource_id
+  path_part   = "admin"
+}
+
+resource "aws_api_gateway_resource" "admin_proxy" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.admin.id
+  path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_resource" "proxy" {
@@ -158,6 +172,28 @@ resource "aws_api_gateway_method" "lambda" {
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method" "admin_lambda" {
+  rest_api_id   = aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.admin_proxy.id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+  request_validator_id = aws_api_gateway_request_validator.admin_lambda.id
+
+  request_parameters = {
+      "method.request.header.Authorization" = true
+  }
+}
+
+resource "aws_api_gateway_request_validator" "admin_lambda" {
+  name                        = "Validate request parameters and headers"
+  rest_api_id                 = aws_api_gateway_rest_api.gateway.id
+  validate_request_body       = false
+  validate_request_parameters = true
+}
+
+
+
 resource "aws_api_gateway_method_settings" "lambda" {
   rest_api_id = aws_api_gateway_rest_api.gateway.id
   stage_name  = var.stack_env
@@ -202,6 +238,40 @@ resource "aws_api_gateway_integration_response" "lambda" {
     aws_api_gateway_method_response.lambda,
   ]
 }
+
+resource "aws_api_gateway_integration" "admin_lambda" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_method.admin_lambda.resource_id
+  http_method = aws_api_gateway_method.admin_lambda.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.lambda_handler.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "admin_lambda" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_method.admin_lambda.resource_id
+  http_method = aws_api_gateway_method.admin_lambda.http_method
+  status_code = "200"
+
+  depends_on = [
+    aws_api_gateway_method.admin_lambda,
+  ]
+}
+
+resource "aws_api_gateway_integration_response" "admin_lambda" {
+  rest_api_id = aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_method.admin_lambda.resource_id
+  http_method = aws_api_gateway_method.admin_lambda.http_method
+  status_code = aws_api_gateway_method_response.lambda.status_code
+
+  depends_on = [
+    aws_api_gateway_integration.admin_lambda,
+    aws_api_gateway_method_response.admin_lambda,
+  ]
+}
+
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
