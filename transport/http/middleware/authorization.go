@@ -25,7 +25,9 @@ func Authorization(authKey string) func(next http.Handler) http.Handler {
 						return errors.New("malformed authorization header")
 					}
 
-					switch strings.ToLower(split[0]) {
+					authType := strings.ToLower(split[0])
+
+					switch authType {
 					case "bearer":
 						if split[1] != authValue {
 							return errors.New("malformed authorization header")
@@ -33,12 +35,15 @@ func Authorization(authKey string) func(next http.Handler) http.Handler {
 
 						return nil
 					default:
-						return errors.New(split[0] + " not supported ")
+						return errors.New(authType + " authorization is not supported ")
 					}
 				}(authKey)
 
 				if authError != nil {
-					_ = response.ToJSON(w, http.StatusUnauthorized, authError.Error())
+					_ = response.ToJSON(w, http.StatusUnauthorized, response.Error{
+						Code:    http.StatusBadRequest,
+						Message: authError.Error(),
+					})
 
 					return
 				}
