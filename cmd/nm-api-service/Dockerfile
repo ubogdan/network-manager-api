@@ -1,4 +1,4 @@
-FROM golang:1.19.8-alpine as builder
+FROM golang:1.20.9-alpine as builder
 
 MAINTAINER Bogdan Ungureanu <ubogdan@gmail.com>
 
