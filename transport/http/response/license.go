@@ -68,7 +68,7 @@ func FromLicenses(licenses []model.License) []License {
 // LicenseToEncryptedPayload convert a license response to an encrypted payload.
 func LicenseToEncryptedPayload(w http.ResponseWriter, payload, key []byte) error {
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 
 	writer := base64.NewEncoder(base64.StdEncoding, w)
 
