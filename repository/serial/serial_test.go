@@ -35,3 +35,34 @@ func Generate(key string, hwID string, valid int64) (string,error) {
 	assert.NoError(t, err)
 	assert.Equal(t, result, "8c658cf2-FAKE-FAKE-FAKE-SERIAL130002")
 }
+
+func TestValidUntil(t *testing.T) {
+	t.Parallel()
+
+	// Generate random private key
+	privateKeyBytes := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, privateKeyBytes)
+	assert.NoError(t, err)
+
+	encrypt, err := crypto.Encrypt(privateKeyBytes, []byte(`
+package serial
+import (
+	"errors"
+)
+
+func ValidUntil(serial string) (int64,error) {
+	if serial == "8c658cf2-FAKE-FAKE-FAKE-SERIAL130002" {
+		return 1751957281, nil
+	}
+	return 0, errors.New("invalid serial")
+}
+
+`))
+	assert.NoError(t, err)
+
+	pemValidUntil.Bytes = encrypt
+
+	result, err := ValidUntil(hex.EncodeToString(privateKeyBytes), "8c658cf2-FAKE-FAKE-FAKE-SERIAL130002")
+	assert.NoError(t, err)
+	assert.Equal(t, result, int64(1751957281))
+}

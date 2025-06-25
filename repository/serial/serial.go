@@ -11,7 +11,8 @@ import (
 	"github.com/ubogdan/network-manager-api/repository/crypto"
 )
 
-var handlerFn func(string, int64) (string, error)
+var generateFn func(string, int64) (string, error)
+var validUntilFn func(string) (int64, error)
 
 var pemBlock, _ = pem.Decode([]byte(`
 -----BEGIN VAULT FILE-----
@@ -47,10 +48,27 @@ l0ExJJdj/9lRePEExhYTpZ4tPGQP/iF2xW4DAvNU1mW/De771mk94LQSHqjsKBQ1
 z7yLD+FhYq667P80BUySQ6NqVtd7CvH3
 -----END VAULT FILE-----`))
 
+var pemValidUntil, _ = pem.Decode([]byte(`
+-----BEGIN VAULT FILE-----
+EP: serial.ValidUntil
+
+n5K0F9pWLyRrRZE3MugVBgXKUbkMULGWrOy7eY1qXYjHAfUs9n4GZhQVDS1O3vYy
+h26Mp13EoFPQy13cbJsIy0r8UN8A/3bXExEQW2yagNF6u+B+TPVnE0IyWWQZjMMM
+diDpEvQpiYZl30Di2gmtGqU8AENjBHl/PemeXu+6wk2AGB2yEKSC6qthkvx5y281
+hLtOilVU+3QOBQxZ8PqV1w2Lpk7xVjlpJqRD4gpdOypyKNeNKNgPkgEQ3KMAGHCu
+Kg/uBOvUC1McMXSRvD2CUMK0VbfgQNvgmG7/ASTalDB2a5kfQ2DuwYhmpC+anSY1
+ei3h98ohORG/fZhk6jj3nVZun7cQn27LIZEFwTHMUG/vLHJvV4NEYEawDhLON1BZ
+UEuRFHljT5/ZFjpp5VXTGJ2MfkFl6Jf/LpmpaNOHj6oavuV4u6N+mBCTCNt6KXwt
+R6YcuyGYjnqJZCEaje4Jf/denQz+z/LO/2NKhzXlOc9invvJlSHT+psOm9wDRXJd
+T7Dsa0Vqa+0jXhPHPg4bYK/Gn0RU9u9WymdYR7zFdbUA5pR385hRNt1U12LztcYE
+jmdVYyGfO8s9NYBtEGq13UUGp0dBthxkQ+dhSowlhST2qN3DcRNIJkyD5ReDcemZ
+kWo6U8s63JZUTywMBVTil0nGVQk7j81XoPwHq4SpsrBjF6w11Gt42Q==
+-----END VAULT FILE-----`))
+
 // Generate returns a serial number from hardwareID and validUntil date.
 func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, error) {
-	if handlerFn != nil {
-		return handlerFn(hardwareID, validUntilUnix)
+	if generateFn != nil {
+		return generateFn(hardwareID, validUntilUnix)
 	}
 
 	script, err := crypto.DecryptWithStringKey(privateKey, pemBlock.Bytes)
@@ -79,7 +97,7 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 		return "", err
 	}
 
-	handlerFn = func(hardwareID string, validUntilUnix int64) (string, error) {
+	generateFn = func(hardwareID string, validUntilUnix int64) (string, error) {
 		results := eval.Call([]reflect.Value{
 			reflect.ValueOf(privateKey),
 			reflect.ValueOf(hardwareID),
@@ -96,5 +114,55 @@ func Generate(privateKey, hardwareID string, validUntilUnix int64) (string, erro
 		return results[0].Interface().(string), nil
 	}
 
-	return handlerFn(hardwareID, validUntilUnix)
+	return generateFn(hardwareID, validUntilUnix)
+}
+
+func ValidUntil(privateKey, serialNumber string) (int64, error) {
+	if validUntilFn != nil {
+		return validUntilFn(serialNumber)
+	}
+
+	script, err := crypto.DecryptWithStringKey(privateKey, pemValidUntil.Bytes)
+	if err != nil {
+		return 0, err
+	}
+
+	i := interp.New(interp.Options{})
+	err = i.Use(stdlib.Symbols)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = i.Eval(string(script))
+	if err != nil {
+		return 0, err
+	}
+
+	callFn, ok := pemValidUntil.Headers["EP"]
+	if !ok {
+		callFn = "main.ValidUntil"
+	}
+
+	eval, err := i.Eval(callFn)
+	if err != nil {
+		return 0, err
+	}
+
+	validUntilFn = func(serial string) (int64, error) {
+		results := eval.Call([]reflect.Value{
+			reflect.ValueOf(serial),
+		})
+
+		if len(results) < 2 {
+			return 0, errors.New("unexpected response")
+		}
+
+		if results[1].Interface() != nil {
+			return 0, results[1].Interface().(error)
+		}
+
+		return results[0].Interface().(int64), nil
+	}
+
+	return validUntilFn(serialNumber)
 }
