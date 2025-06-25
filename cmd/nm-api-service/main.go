@@ -109,6 +109,7 @@ func setup(logger service.Logger) (*mux.Router, error) {
 	muxRouter := router.NewMuxRouter(api, logger)
 	handler.NewLicense(muxRouter, licSvc, authorizedKeyBytes, logger)
 	handler.NewBackup(muxRouter, backup.New(bucketName), licSvc, logger)
+	handler.NewEmail(muxRouter, licSvc, logger)
 	//handler.NewRelease(muxRouter, relSvc, logger)
 	handler.NewVersion(muxRouter)
 

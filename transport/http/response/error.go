@@ -2,7 +2,7 @@ package response
 
 import (
 	"encoding/json"
-	
+	"net/http"
 )
 
 type Error struct {
